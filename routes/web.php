@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PromoController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page
@@ -25,6 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Produk Management (Resource Routes)
     Route::resource('produk', ProdukController::class);
+    // Promo Management (Resource Routes)
+    Route::resource('promo', PromoController::class);
 
 });
 
