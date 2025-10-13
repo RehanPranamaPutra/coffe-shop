@@ -41,6 +41,7 @@
                         $navLinks = [
                             ['label' => 'Beranda', 'route' => 'dashboard', 'icon' => '...'],
                             ['label' => 'Produk', 'route' => 'produk.index', 'icon' => '...'],
+                            ['label' => 'Promo', 'route' => 'promo.index', 'icon' => '...'],
                             // ['label' => 'Pesanan', 'route' => 'orders.index', 'icon' => '...'], // tambahkan route ini nanti
                             // ['label' => 'Laporan', 'route' => 'reports.index', 'icon' => '...'], // tambahkan route ini nanti
                         ];
