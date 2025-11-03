@@ -12,6 +12,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @stack('styles')
 </head>
 
 <body class="font-sans antialiased">
@@ -22,9 +23,7 @@
         {{-- Bagian Sidebar Desktop (Kiri) - Hidden di Mobile --}}
         <div class="hidden lg:flex bg-[#7a3939] text-white flex-col justify-between p-4 shadow-xl sticky top-0 h-screen overflow-hidden
                        transition-all duration-300 ease-in-out z-20"
-            :class="sidebarOpen ? 'w-64' : 'w-20'"
-            @mouseenter="sidebarOpen = true"
-            @mouseleave="sidebarOpen = false">
+            :class="sidebarOpen ? 'w-64' : 'w-20'" @mouseenter="sidebarOpen = true" @mouseleave="sidebarOpen = false">
             <div>
                 {{-- LOGO/NAMA APLIKASI --}}
                 <div class="mb-10 mt-2 flex items-center justify-center">
@@ -44,17 +43,20 @@
                             [
                                 'label' => 'Beranda',
                                 'route' => 'dashboard',
-                                'icon' => '<path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />'
+                                'icon' =>
+                                    '<path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />',
                             ],
                             [
                                 'label' => 'Produk',
                                 'route' => 'produk.index',
-                                'icon' => '<path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />'
+                                'icon' =>
+                                    '<path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />',
                             ],
                             [
                                 'label' => 'Promo',
                                 'route' => 'promo.index',
-                                'icon' => '<path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />'
+                                'icon' =>
+                                    '<path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />',
                             ],
                         ];
                     @endphp
@@ -73,6 +75,39 @@
                         </a>
                     @endforeach
                 </nav>
+                {{-- Dropdown Transaksi --}}
+                <div x-data="{ open: false }" class="text-white">
+                    <button @click="open = !open"
+                        class="flex items-center justify-between w-full p-3 rounded-lg hover:bg-[#cc9966] transition duration-300"
+                        :class="sidebarOpen ? 'justify-between' : 'justify-center'">
+                        <div class="flex items-center space-x-3" :class="sidebarOpen ? '' : 'justify-center'">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path d="M3 3a1 1 0 000 2h1l1 9h10l1-9h1a1 1 0 100-2H3zm5 12a2 2 0 104 0H8z" />
+                            </svg>
+                            <span x-show="sidebarOpen" class="whitespace-nowrap">Transaksi</span>
+                        </div>
+                        <svg x-show="sidebarOpen" xmlns="http://www.w3.org/2000/svg" :class="open ? 'rotate-180' : ''"
+                            class="h-4 w-4 transform transition-transform" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    {{-- Submenu --}}
+                    <div x-show="open" x-transition class="ml-6 mt-1 space-y-1" x-cloak>
+                        <a href="{{ route('penjualan.index') }}"
+                            class="block px-3 py-2 rounded-md text-sm hover:bg-[#cc9966] hover:font-semibold transition duration-300
+                {{ request()->routeIs('pembelian.*') ? 'bg-[#cc9966] font-bold' : '' }}">
+                            Penjualan
+                        </a>
+                        <a href=""
+                            class="block px-3 py-2 rounded-md text-sm hover:bg-[#cc9966] hover:font-semibold transition duration-300
+                {{ request()->routeIs('penjualan.*') ? 'bg-[#cc9966] font-bold' : '' }}">
+                            Pembelian
+                        </a>
+                    </div>
+                </div>
             </div>
 
             {{-- Logout Button Desktop --}}
@@ -102,20 +137,25 @@
                 <div class="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex justify-between items-center">
                     <div class="flex items-center gap-2 sm:gap-3">
                         {{-- Hamburger Menu untuk Mobile/Tablet --}}
-                        <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#7a3939]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <button @click="mobileMenuOpen = !mobileMenuOpen"
+                            class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#7a3939]" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
 
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#7a3939] to-[#cc9966] rounded-xl flex items-center justify-center shadow-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-white" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
+                        <div
+                            class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#7a3939] to-[#cc9966] rounded-xl flex items-center justify-center shadow-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-white"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
-                        <h2 class="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#7a3939] to-[#cc9966] bg-clip-text text-transparent">
+                        <h2
+                            class="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#7a3939] to-[#cc9966] bg-clip-text text-transparent">
                             Ringkasan Beranda
                         </h2>
                     </div>
@@ -143,22 +183,20 @@
             </header>
 
             {{-- Mobile/Tablet Dropdown Menu --}}
-            <div x-show="mobileMenuOpen"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 -translate-y-2"
-                 x-transition:enter-end="opacity-100 translate-y-0"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 translate-y-0"
-                 x-transition:leave-end="opacity-0 -translate-y-2"
-                 @click.away="mobileMenuOpen = false"
-                 class="lg:hidden bg-white shadow-lg border-b-2 border-[#cc9966]/30 sticky top-[60px] z-10"
-                 style="display: none;">
+            <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+                @click.away="mobileMenuOpen = false"
+                class="lg:hidden bg-white shadow-lg border-b-2 border-[#cc9966]/30 sticky top-[60px] z-10"
+                style="display: none;">
                 <nav class="p-4 space-y-2">
                     @foreach ($navLinks as $link)
                         <a href="{{ route($link['route']) }}"
                             class="flex items-center p-3 rounded-lg transition duration-300
                             {{ request()->routeIs($link['route']) ? 'bg-[#cc9966] text-white font-semibold' : 'text-gray-700 hover:bg-gray-100' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 flex-shrink-0"
+                                viewBox="0 0 20 20" fill="currentColor">
                                 {!! $link['icon'] !!}
                             </svg>
                             {{ $link['label'] }}
@@ -167,9 +205,13 @@
 
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="w-full flex items-center p-3 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        <button type="submit"
+                            class="w-full flex items-center p-3 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z"
+                                    clip-rule="evenodd" />
                             </svg>
                             Keluar
                         </button>
@@ -190,7 +232,8 @@
                     <a href="{{ route($link['route']) }}"
                         class="flex flex-col items-center justify-center transition duration-200
                         {{ request()->routeIs($link['route']) ? 'text-[#cc9966] font-semibold' : 'text-gray-500 hover:text-[#7a3939]' }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20"
+                            fill="currentColor">
                             {!! $link['icon'] !!}
                         </svg>
                         <span class="text-xs mt-1">{{ $link['label'] }}</span>
@@ -199,6 +242,7 @@
             </div>
         </nav>
     </div>
+    @stack('scripts')
 </body>
 
 </html>

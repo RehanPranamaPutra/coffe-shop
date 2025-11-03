@@ -26,4 +26,14 @@ class Menu extends Model
         'harga' => 'decimal:2',
         'stok' => 'integer',
     ];
+
+    public function promo()
+    {
+        return $this->hasMany(Menu::class);
+    }
+    public function transaksiPembelian()
+    {
+        return $this->hasMany(TransaksiPembelian::class);
+    }
+
 }

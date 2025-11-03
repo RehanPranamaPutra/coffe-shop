@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoController;
+use App\Http\Controllers\TransaksiPenjualanController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page
@@ -15,7 +16,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
-    Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile Management
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -28,7 +29,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('produk', ProdukController::class);
     // Promo Management (Resource Routes)
     Route::resource('promo', PromoController::class);
-
+    // Transaksi Penjualan
+    Route::get('/penjualan', [TransaksiPenjualanController::class, 'index'])->name('penjualan.index');
+    Route::post('/penjualan', [TransaksiPenjualanController::class, 'store'])->name('transaksi.store');
+    Route::get('/penjualan/struk/{kode}', [TransaksiPenjualanController::class, 'struk'])->name('transaksi.struk');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
