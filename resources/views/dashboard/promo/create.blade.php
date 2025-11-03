@@ -40,7 +40,6 @@
                     <select name="menu_id" id="menu_id" required
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7a3939] focus:border-transparent transition duration-200 @error('menu_id') border-red-500 @enderror">
                         <option value="">-- Pilih Produk yang Dikenai Promo --</option>
-                        {{-- Loop daftar menu yang dilempar dari controller --}}
                         @foreach ($menus as $menu)
                             <option value="{{ $menu->id }}" {{ old('menu_id') == $menu->id ? 'selected' : '' }}>
                                 {{ $menu->nama_menu }} (ID: {{ $menu->id }})
@@ -54,7 +53,7 @@
 
                 {{-- Row: Jenis Promo & Nilai Diskon --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {{-- Jenis Promo (Enum: persen, nominal) --}}
+                    {{-- Jenis Promo --}}
                     <div class="space-y-2">
                         <label for="jenis_promo" class="block text-sm font-bold text-gray-700">
                             Jenis Diskon <span class="text-red-500">*</span>
@@ -70,13 +69,12 @@
                         @enderror
                     </div>
 
-                    {{-- Nilai Diskon (decimal 12,2) --}}
+                    {{-- Nilai Diskon --}}
                     <div class="space-y-2">
                         <label for="nilai_diskon" class="block text-sm font-bold text-gray-700">
                             Nilai Diskon <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            {{-- Teks petunjuk akan berubah tergantung pilihan jenis_promo (via JS) --}}
                             <span id="label_diskon" class="absolute right-4 top-3.5 text-gray-500 font-semibold text-sm"></span>
                             <input type="number" name="nilai_diskon" id="nilai_diskon" value="{{ old('nilai_diskon') }}"
                                 class="w-full pr-14 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7a3939] focus:border-transparent transition duration-200 @error('nilai_diskon') border-red-500 @enderror"
@@ -117,6 +115,21 @@
                     </div>
                 </div>
 
+                {{-- ✅ Status Promo --}}
+                <div class="space-y-2">
+                    <label for="status" class="block text-sm font-bold text-gray-700">
+                        Status Promo <span class="text-red-500">*</span>
+                    </label>
+                    <select name="status" id="status" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7a3939] focus:border-transparent transition duration-200 @error('status') border-red-500 @enderror">
+                        <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                    </select>
+                    @error('status')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Action Buttons --}}
                 <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
                     <a href="{{ route('promo.index') }}"
@@ -146,7 +159,7 @@
                 const jenis = jenisPromoSelect.value;
                 if (jenis === 'persen') {
                     labelDiskon.textContent = '%';
-                    nilaiDiskonInput.setAttribute('max', 100); // Batas maksimal 100%
+                    nilaiDiskonInput.setAttribute('max', 100);
                 } else if (jenis === 'nominal') {
                     labelDiskon.textContent = 'Rp';
                     nilaiDiskonInput.removeAttribute('max');
@@ -155,10 +168,7 @@
                 }
             }
 
-            // Panggil saat halaman dimuat (untuk old input)
             updateDiskonLabel();
-
-            // Panggil saat pilihan jenis promo berubah
             jenisPromoSelect.addEventListener('change', updateDiskonLabel);
         });
     </script>

@@ -21,6 +21,7 @@ class Promo extends Model
         'nilai_diskon',
         'tanggal_mulai',
         'tanggal_selesai',
+        'status'
     ];
 
     /**
@@ -66,4 +67,6 @@ class Promo extends Model
 
         return 'Aktif';
     }
+
+
 }
