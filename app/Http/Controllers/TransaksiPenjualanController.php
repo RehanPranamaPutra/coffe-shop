@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Menu;
 use App\Models\Promo;
 use Illuminate\Support\Str;
@@ -59,7 +60,7 @@ class TransaksiPenjualanController extends Controller
 
             DB::commit();
             return redirect()->route('transaksi.struk', ['kode' => $kodeTransaksi]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menyimpan transaksi: ' . $e->getMessage());
         }
