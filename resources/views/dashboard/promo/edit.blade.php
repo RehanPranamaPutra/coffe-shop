@@ -25,7 +25,8 @@
             {{-- Header --}}
             <div class="bg-gradient-to-r from-[#7a3939] to-[#cc9966] p-6">
                 <h3 class="text-2xl font-bold text-white">Edit Promo</h3>
-                <p class="text-white/80 text-sm mt-1">Perbarui detail diskon untuk produk: {{ $promo->menu->nama_menu ?? 'Produk Dihapus' }}</p>
+                <p class="text-white/80 text-sm mt-1">Perbarui detail diskon untuk produk:
+                    {{ $promo->menu->nama_menu ?? 'Produk Dihapus' }}</p>
             </div>
 
             {{-- Form Promo --}}
@@ -65,8 +66,12 @@
                         <select name="jenis_promo" id="jenis_promo" required
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7a3939] focus:border-transparent transition duration-200 @error('jenis_promo') border-red-500 @enderror">
                             <option value="">Pilih Jenis Diskon</option>
-                            <option value="persen" {{ old('jenis_promo', $promo->jenis_promo) == 'persen' ? 'selected' : '' }}>Persentase (%)</option>
-                            <option value="nominal" {{ old('jenis_promo', $promo->jenis_promo) == 'nominal' ? 'selected' : '' }}>Nominal (Rp)</option>
+                            <option value="persen"
+                                {{ old('jenis_promo', $promo->jenis_promo) == 'persen' ? 'selected' : '' }}>Persentase (%)
+                            </option>
+                            <option value="nominal"
+                                {{ old('jenis_promo', $promo->jenis_promo) == 'nominal' ? 'selected' : '' }}>Nominal (Rp)
+                            </option>
                         </select>
                         @error('jenis_promo')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -80,7 +85,8 @@
                         </label>
                         <div class="relative">
                             {{-- Teks petunjuk akan berubah tergantung pilihan jenis_promo (via JS) --}}
-                            <span id="label_diskon" class="absolute right-4 top-3.5 text-gray-500 font-semibold text-sm"></span>
+                            <span id="label_diskon"
+                                class="absolute right-4 top-3.5 text-gray-500 font-semibold text-sm"></span>
                             <input type="number" name="nilai_diskon" id="nilai_diskon"
                                 value="{{ old('nilai_diskon', $promo->nilai_diskon) }}"
                                 class="w-full pr-14 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7a3939] focus:border-transparent transition duration-200 @error('nilai_diskon') border-red-500 @enderror"
@@ -123,6 +129,27 @@
                         @enderror
                     </div>
                 </div>
+                <div class="space-y-2">
+                    <label for="status" class="block text-sm font-bold text-gray-700">
+                        Status Promo <span class="text-red-500">*</span>
+                    </label>
+                    <select name="status" id="status" required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7a3939] focus:border-transparent
+    transition duration-200 @error('status') border-red-500 @enderror">
+
+                        <option value="aktif" {{ old('status', $promo->status) == 'aktif' ? 'selected' : '' }}>
+                            Aktif
+                        </option>
+
+                        <option value="nonaktif" {{ old('status', $promo->status) == 'nonaktif' ? 'selected' : '' }}>
+                            Nonaktif
+                        </option>
+
+                    </select>
+                    @error('status')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 {{-- Action Buttons --}}
                 <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
@@ -133,7 +160,8 @@
                     <button type="submit"
                         class="px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold rounded-lg hover:shadow-lg transform hover:scale-105 transition duration-200 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                         Update Promo
                     </button>
