@@ -5,6 +5,7 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\TransaksiPenjualanController;
+use App\Http\Controllers\TransaksiPembelianController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page
@@ -14,7 +15,6 @@ Route::get('/', function () {
 
 // Protected Routes (memerlukan authentication)
 Route::middleware(['auth', 'verified'])->group(function () {
-
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -27,12 +27,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Produk Management (Resource Routes)
     Route::resource('produk', ProdukController::class);
+
     // Promo Management (Resource Routes)
     Route::resource('promo', PromoController::class);
+
     // Transaksi Penjualan
     Route::get('/penjualan', [TransaksiPenjualanController::class, 'index'])->name('penjualan.index');
     Route::post('/penjualan', [TransaksiPenjualanController::class, 'store'])->name('transaksi.store');
     Route::get('/penjualan/struk/{kode}', [TransaksiPenjualanController::class, 'struk'])->name('transaksi.struk');
+
+    // Transaksi Pembelian
+    
+     Route::resource('pembelian', TransaksiPembelianController::class);
+
+
 });
 
 require __DIR__ . '/auth.php';

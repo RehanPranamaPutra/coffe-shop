@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+transaksi_penjualan
 use Carbon\Carbon;
+use Exception;
 use App\Models\Menu;
 use App\Models\Promo;
 use Illuminate\Support\Str;
@@ -110,7 +112,7 @@ class TransaksiPenjualanController extends Controller
 
             // Redirect ke halaman struk
             return redirect()->route('transaksi.struk', ['kode' => $kodeTransaksi]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             // Log error untuk developer (opsional)
             // \Log::error($e->getMessage());
