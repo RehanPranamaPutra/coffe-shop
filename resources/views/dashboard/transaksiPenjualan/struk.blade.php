@@ -5,7 +5,7 @@
 
     <!-- Tombol Aksi (Hilang saat Print) -->
     <div class="mb-6 flex space-x-4 print:hidden">
-        <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-500 text-white rounded shadow hover:bg-gray-600 transition">
+        <a href="{{ route('penjualan.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded shadow hover:bg-gray-600 transition">
             &larr; Kembali ke Menu
         </a>
         <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700 transition flex items-center">
