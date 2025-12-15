@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-transaksi_penjualan
 use Carbon\Carbon;
 use Exception;
 use App\Models\Menu;
