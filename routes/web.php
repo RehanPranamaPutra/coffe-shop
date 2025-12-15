@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GajiKaryawanController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromoController;
@@ -35,10 +36,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/penjualan', [TransaksiPenjualanController::class, 'index'])->name('penjualan.index');
     Route::post('/penjualan', [TransaksiPenjualanController::class, 'store'])->name('transaksi.store');
     Route::get('/penjualan/struk/{kode}', [TransaksiPenjualanController::class, 'struk'])->name('transaksi.struk');
-
     // Transaksi Pembelian
-    
-     Route::resource('pembelian', TransaksiPembelianController::class);
+    Route::resource('pembelian', TransaksiPembelianController::class);
+    //gaji karyawan
+    Route::get('/gaji-karyawan',[GajiKaryawanController::class,'index'])->name('gaji.index');
+    Route::post('/gaji-karyawan',[GajiKaryawanController::class,'store'])->name('gaji.store');
+    Route::get('/gaji-karyawan/{id}',[GajiKaryawanController::class,'destroy'])->name('gaji.destroy');
 
 
 });
