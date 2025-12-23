@@ -1,17 +1,25 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PromoController;
-use App\Http\Controllers\TransaksiPenjualanController;
-use App\Http\Controllers\TransaksiPembelianController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PromoController;
+use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\PublicController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TransaksiPembelianController;
+use App\Http\Controllers\TransaksiPenjualanController;
 
 // Landing Page
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::controller(PublicController::class)->group(function () {
+    Route::get('/', 'home')->name('home');
+    Route::get('/menu', 'menu')->name('menu');
+
+    Route::get('/promo', 'promo')->name('promo.landing');
+    Route::get('/tentang', 'about')->name('about');
+    Route::get('/kontak', 'contact')->name('contact');
+});
+
+Route::get('/menu/{slug}',[PublicController::class,'menuShow'])->name('menu.show');
 
 // Protected Routes (memerlukan authentication)
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -37,7 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/penjualan/struk/{kode}', [TransaksiPenjualanController::class, 'struk'])->name('transaksi.struk');
 
     // Transaksi Pembelian
-    
+
      Route::resource('pembelian', TransaksiPembelianController::class);
 
 

@@ -34,6 +34,26 @@ class PromosiSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'menu_id' => 2, // Mie Ayam
+                'jenis_promo' => 'nominal',
+                'nilai_diskon' => 4000, // potongan langsung
+                'tanggal_mulai' => now(),
+                'tanggal_selesai' => now()->addDays(5),
+                'status' => 'aktif',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'menu_id' => 2, // Mie Ayam
+                'jenis_promo' => 'nominal',
+                'nilai_diskon' => 6000, // potongan langsung
+                'tanggal_mulai' => now(),
+                'tanggal_selesai' => now()->addDays(5),
+                'status' => 'aktif',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

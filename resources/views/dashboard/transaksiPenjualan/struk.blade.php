@@ -5,7 +5,7 @@
 
     <!-- Tombol Aksi (Hilang saat Print) -->
     <div class="mb-6 flex space-x-4 print:hidden">
-        <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-500 text-white rounded shadow hover:bg-gray-600 transition">
+        <a href="{{ route('penjualan.index') }}" class="px-4 py-2 bg-gray-500 text-white rounded shadow hover:bg-gray-600 transition">
             &larr; Kembali ke Menu
         </a>
         <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white rounded shadow hover:bg-indigo-700 transition flex items-center">
@@ -21,7 +21,7 @@
 
         <!-- Header Toko -->
         <div class="text-center mb-4 border-b-2 border-dashed border-gray-300 pb-4">
-            <h1 class="text-2xl font-bold uppercase tracking-widest text-gray-900">{{ config('app.name', 'CAFE ABC') }}</h1>
+            <h1 class="text-2xl font-bold uppercase tracking-widest text-gray-900">Accsess Coffe</h1>
             <p class="text-xs text-gray-500">Jl. Contoh No. 123, Jakarta</p>
             <p class="text-xs text-gray-500">Telp: 0812-3456-7890</p>
         </div>
