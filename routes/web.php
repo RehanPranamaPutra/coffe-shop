@@ -48,7 +48,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
      Route::resource('pembelian', TransaksiPembelianController::class);
 
-
 });
 
 require __DIR__ . '/auth.php';
