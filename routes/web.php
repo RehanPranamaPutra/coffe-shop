@@ -43,7 +43,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/gaji-karyawan',[GajiKaryawanController::class,'store'])->name('gaji.store');
     Route::get('/gaji-karyawan/{id}',[GajiKaryawanController::class,'destroy'])->name('gaji.destroy');
 
-
 });
 
 require __DIR__ . '/auth.php';
