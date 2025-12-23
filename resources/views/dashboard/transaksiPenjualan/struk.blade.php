@@ -21,7 +21,7 @@
 
         <!-- Header Toko -->
         <div class="text-center mb-4 border-b-2 border-dashed border-gray-300 pb-4">
-            <h1 class="text-2xl font-bold uppercase tracking-widest text-gray-900">{{ config('app.name', 'CAFE ABC') }}</h1>
+            <h1 class="text-2xl font-bold uppercase tracking-widest text-gray-900">Accsess Coffe</h1>
             <p class="text-xs text-gray-500">Jl. Contoh No. 123, Jakarta</p>
             <p class="text-xs text-gray-500">Telp: 0812-3456-7890</p>
         </div>
