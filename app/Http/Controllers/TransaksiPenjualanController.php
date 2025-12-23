@@ -17,107 +17,112 @@ class TransaksiPenjualanController extends Controller
 {
     public function index()
     {
-        $menus = Menu::where('status', 'Tersedia')->get();
+        $now = Carbon::now();
+        // Ambil menu yang tersedia beserta promo yang sedang aktif (berdasarkan tanggal dan status)
+        $menus = Menu::with(['promos' => function ($query) use ($now) {
+            $query->where('status', 'aktif')
+                ->where('tanggal_mulai', '<=', $now)
+                ->where('tanggal_selesai', '>=', $now);
+        }])->where('status', 'Tersedia')->get();
+
         return view('dashboard.transaksiPenjualan.index', compact('menus'));
     }
 
     public function store(Request $request)
-    {
-        // 1. Decode Data JSON
-        $cart = json_decode($request->data, true);
+{
+    $cart = json_decode($request->data, true);
+    if (!$cart) return back()->with('error', 'Keranjang kosong!');
 
-        if (!$cart || count($cart) == 0) {
-            return back()->with('error', 'Keranjang kosong!');
-        }
+    $now = Carbon::now();
+    $totalBelanjaKotor = 0;
+    $totalPotonganPromo = 0;
+    $validCart = [];
 
-        // 2. Ambil ID Menu dari keranjang untuk query ke DB (Eager Loading)
-        $menuIds = collect($cart)->pluck('id')->toArray();
-        $menus = Menu::whereIn('id', $menuIds)->get()->keyBy('id');
-
-        // 3. Hitung Ulang Total di Server (Demi Keamanan)
-        $totalBelanja = 0;
-        $validCart = []; // Menyimpan data yang sudah divalidasi
-
+    DB::beginTransaction();
+    try {
         foreach ($cart as $item) {
-            $menu = $menus->get($item['id']);
+            // Ambil data menu dan promo aktif dari DB
+            $menu = Menu::with(['promos' => function($q) use ($now) {
+                $q->where('status', 'aktif')->where('tanggal_mulai', '<=', $now)->where('tanggal_selesai', '>=', $now);
+            }])->find($item['id']);
 
-            // Skip jika menu tidak ditemukan di DB (misal baru saja dihapus admin)
             if (!$menu) continue;
 
             $qty = (int) $item['qty'];
-            if ($qty <= 0) continue;
+            $hargaAsli = $menu->harga;
+            $diskonSatuan = 0;
+            $promoId = null;
 
-            // Gunakan harga dari DATABASE, bukan dari request JSON
-            $subtotal = $menu->harga * $qty;
-            $totalBelanja += $subtotal;
+            // Hitung ulang promo di server
+            $activePromo = $menu->promos->first();
+            if ($activePromo) {
+                $promoId = $activePromo->id;
+                if ($activePromo->jenis_promo == 'persen') {
+                    $diskonSatuan = ($hargaAsli * $activePromo->nilai_diskon) / 100;
+                } else {
+                    $diskonSatuan = $activePromo->nilai_diskon;
+                }
+            }
+
+            $subtotalItem = ($hargaAsli - $diskonSatuan) * $qty;
+
+            $totalBelanjaKotor += ($hargaAsli * $qty);
+            $totalPotonganPromo += ($diskonSatuan * $qty);
 
             $validCart[] = [
                 'menu_id' => $menu->id,
-                'qty' => $qty,
-                'harga_satuan' => $menu->harga,
-                'subtotal' => $subtotal,
+                'jumlah' => $qty,
+                'harga_satuan' => $hargaAsli,
+                'diskon' => $diskonSatuan * $qty, // Total diskon untuk item ini
+                'promo_id' => $promoId,
+                'subtotal' => $subtotalItem
             ];
         }
 
-        // 4. Bersihkan Input Pembayaran
-        // Pastikan hanya angka yang diambil (hapus Rp, titik, koma jika ada)
+        $totalHarusBayar = $totalBelanjaKotor - $totalPotonganPromo;
         $dibayar = (int) preg_replace('/[^0-9]/', '', $request->dibayar);
 
-        // Potongan (Logika promo bisa ditambahkan di sini nanti)
-        $potongan = 0;
-        $totalBayar = $totalBelanja - $potongan;
-
-        // 5. Validasi Pembayaran
-        if ($dibayar < $totalBayar) {
-            return back()->with('error', 'Uang pembayaran kurang! Total: ' . number_format($totalBayar));
+        if ($dibayar < $totalHarusBayar) {
+            throw new Exception('Uang tidak cukup. Total: ' . number_format($totalHarusBayar));
         }
 
-        $kembalian = $dibayar - $totalBayar;
+        $kodeTransaksi = 'TRX-' . $now->format('Ymd') . '-' . strtoupper(Str::random(5));
 
-        // 6. Generate Kode Unik (Format: TRX-TAHUNBULANTANGGAL-RANDOM)
-        // Contoh: TRX-20231025-X7Z9A
-        $kodeTransaksi = 'TRX-' . Carbon::now()->format('Ymd') . '-' . strtoupper(Str::random(5));
+        // Simpan Header Transaksi
+        $transaksi = TransaksiPenjualan::create([
+            'user_id' => auth()->id(),
+            'kode_transaksi' => $kodeTransaksi,
+            'total' => $totalBelanjaKotor,
+            'potongan' => $totalPotonganPromo,
+            'total_bayar' => $totalHarusBayar,
+            'dibayar' => $dibayar,
+            'kembalian' => $dibayar - $totalHarusBayar,
+        ]);
 
-        DB::beginTransaction();
-        try {
-            // 💾 A. Simpan Transaksi Utama
-            $transaksi = TransaksiPenjualan::create([
-                'user_id' => auth()->id(),
-                'kode_transaksi' => $kodeTransaksi,
-                'total' => $totalBelanja,
-                'potongan' => $potongan,
-                'total_bayar' => $totalBayar,
-                'dibayar' => $dibayar,
-                'kembalian' => $kembalian,
-                // 'promo_id' dihapus karena tidak ada di Schema create table Anda sebelumnya.
-                // Jika sudah menambahkan kolom promo_id di database, silakan uncomment baris bawah:
-                // 'promo_id' => $request->promo_id ?? null,
+        // Simpan Detail Item
+        foreach ($validCart as $v) {
+            TransaksiItem::create([
+                'transaksi_id' => $transaksi->id,
+                'menu_id' => $v['menu_id'],
+                'jumlah' => $v['jumlah'],
+                'harga_satuan' => $v['harga_satuan'],
+                'subtotal' => $v['subtotal'],
+                'diskon' => $v['diskon'],
+                'promo_id' => $v['promo_id']
             ]);
 
-            // 💾 B. Simpan Detail Item
-            foreach ($validCart as $item) {
-                TransaksiItem::create([
-                    'transaksi_id' => $transaksi->id,
-                    'menu_id' => $item['menu_id'],
-                    'jumlah' => $item['qty'],
-                    'harga_satuan' => $item['harga_satuan'],
-                    'subtotal' => $item['subtotal'],
-                    'diskon' => 0, // Default 0 sesuai schema
-                    'promo_id' => null // Default null sesuai schema
-                ]);
-            }
-
-            DB::commit();
-
-            // Redirect ke halaman struk
-            return redirect()->route('transaksi.struk', ['kode' => $kodeTransaksi]);
-        } catch (Exception $e) {
-            DB::rollBack();
-            // Log error untuk developer (opsional)
-            // \Log::error($e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
+            // Logika potong stok (Opsional)
+            // Menu::find($v['menu_id'])->decrement('stok', $v['jumlah']);
         }
+
+        DB::commit();
+        return redirect()->route('transaksi.struk', ['kode' => $kodeTransaksi]);
+
+    } catch (Exception $e) {
+        DB::rollBack();
+        return back()->with('error', $e->getMessage());
     }
+}
 
     public function struk($kode)
     {

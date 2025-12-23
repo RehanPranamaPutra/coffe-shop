@@ -6,6 +6,7 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GajiKaryawanController;
 use App\Http\Controllers\TransaksiPembelianController;
 use App\Http\Controllers\TransaksiPenjualanController;
 
@@ -46,7 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Transaksi Pembelian
 
-     Route::resource('pembelian', TransaksiPembelianController::class);
+    Route::resource('pembelian', TransaksiPembelianController::class);
+    Route::get('/gaji-karyawan',[GajiKaryawanController::class,'index'])->name('gaji.index');
+    Route::post('/gaji-karyawan',[GajiKaryawanController::class,'store'])->name('gaji.store');
+    Route::get('/gaji-karyawan/{id}',[GajiKaryawanController::class,'destroy'])->name('gaji.destroy');
 
 });
 

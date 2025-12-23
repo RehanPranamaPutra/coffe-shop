@@ -28,9 +28,10 @@ class Menu extends Model
         'stok' => 'integer',
     ];
 
-    public function promo()
+    public function promos()
     {
-        return $this->hasMany(Menu::class);
+        // Hubungkan ke model Promo, bukan Menu
+    return $this->hasMany(Promo::class, 'menu_id'); 
     }
     public function transaksiPembelian()
     {
