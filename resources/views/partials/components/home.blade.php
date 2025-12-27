@@ -208,7 +208,7 @@
                     <div class="grid grid-cols-2 gap-4 relative z-10">
                         <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?w=500&q=80"
                             class="rounded-[20px] w-full h-64 object-cover transform translate-y-8 shadow-xl">
-                        <img src="https://images.unsplash.com/photo-1507133750069-bef72f3707a9?w=500&q=80"
+                        <img src="{{ asset('asset/kopi1.jpeg') }}"
                             class="rounded-[20px] w-full h-64 object-cover shadow-xl">
                     </div>
                 </div>
