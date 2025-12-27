@@ -51,7 +51,7 @@
                     <!-- Badge -->
                     <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-full shadow-xl z-20 animate-pulse-slow">
                         <div class="text-center">
-                            <span class="block text-3xl font-bold text-coffee-primary">2024</span>
+                            <span class="block text-3xl font-bold text-coffee-primary">2023</span>
                             <span class="text-xs uppercase tracking-widest text-gray-400">Established</span>
                         </div>
                     </div>
@@ -154,18 +154,18 @@
 
                     <!-- Foto Besar Kiri -->
                     <div class="col-span-2 row-span-2 rounded-[2rem] overflow-hidden relative group">
-                        <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                        <img src="{{ asset('asset/kopi3.jpeg') }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                         <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition"></div>
                     </div>
 
                     <!-- Foto Kecil Atas -->
                     <div class="col-span-1 row-span-1 rounded-[2rem] overflow-hidden relative group">
-                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
+                        <img src="{{ asset('asset/kopi2.jpeg') }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
                     </div>
 
                     <!-- Foto Kecil Atas Kanan -->
                     <div class="col-span-1 row-span-1 rounded-[2rem] overflow-hidden relative group">
-                        <img src="https://images.unsplash.com/photo-1511537632536-b7a7277154fb?auto=format&fit=crop&w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                        <img src="{{ asset('asset/kopi1.jpeg') }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
                     </div>
 
                     <!-- Foto Panjang Bawah -->

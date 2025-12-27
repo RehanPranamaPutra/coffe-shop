@@ -18,7 +18,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-coffee-dark">Lokasi</h4>
-                        <p class="text-gray-500 text-sm">Jl. Senja Utama No. 12, Jakarta Selatan</p>
+                        <p class="text-gray-500 text-sm">Jl. Akses Bandara Internasional Minangkabau No.9, Katapiang, Kec. Batang Anai, Kabupaten Padang Pariaman, Sumatera Barat 25586</p>
                     </div>
                 </div>
 
@@ -28,7 +28,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-coffee-dark">Telepon</h4>
-                        <p class="text-gray-500 text-sm">+62 812 3456 7890</p>
+                        <p class="text-gray-500 text-sm">+62 812-7056-2674</p>
                     </div>
                 </div>
             </div>

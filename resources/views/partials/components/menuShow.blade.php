@@ -102,7 +102,7 @@
                         </div>
                     </div>
 
-                    <!-- ACTION AREA (Alpine Logic) -->
+                    {{-- <!-- ACTION AREA (Alpine Logic) -->
                     @if($menu->status == 'Tersedia' && $menu->stok > 0)
                         <div class="pt-4 space-y-4">
                             <!-- Quantity Selector -->
@@ -143,7 +143,7 @@
                             <h3 class="font-bold text-gray-500 text-lg">Maaf, Stok Habis</h3>
                             <p class="text-sm text-gray-400">Silakan cek kembali nanti.</p>
                         </div>
-                    @endif
+                    @endif --}}
 
                 </div>
             </div>

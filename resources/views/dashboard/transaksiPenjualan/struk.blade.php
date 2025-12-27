@@ -22,8 +22,8 @@
         <!-- Header Toko -->
         <div class="text-center mb-4 border-b-2 border-dashed border-gray-300 pb-4">
             <h1 class="text-2xl font-bold uppercase tracking-widest text-gray-900">Accsess Coffe</h1>
-            <p class="text-xs text-gray-500">Jl. Contoh No. 123, Jakarta</p>
-            <p class="text-xs text-gray-500">Telp: 0812-3456-7890</p>
+            <p class="text-xs text-gray-500">Jl. Akses Bandara Internasional Minangkabau No.9, Katapiang, Kec. Batang Anai, Kabupaten Padang Pariaman, Sumatera Barat 25586</p>
+            <p class="text-xs text-gray-500">Telp: 081270562674 </p>
         </div>
 
         <!-- Info Transaksi -->

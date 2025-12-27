@@ -72,9 +72,9 @@
 
                 <!-- Right Side (Cart/Button) -->
                 <div class="hidden md:flex items-center space-x-4">
-                    <a href="#"
+                    <a href="{{ route('login') }}"
                         class="px-5 py-2 rounded-full border border-coffee-primary text-coffee-primary text-sm font-semibold hover:bg-coffee-primary hover:text-white transition duration-300">
-                        Pesan Sekarang
+                        Login
                     </a>
                 </div>
 
