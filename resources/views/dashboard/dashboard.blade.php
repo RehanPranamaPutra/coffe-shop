@@ -8,9 +8,7 @@
             <p class="text-gray-500 mt-1">Laporan harian untuk {{ \Carbon\Carbon::now()->format('d F Y') }}</p>
         </div>
         <div class="flex gap-2">
-             <button class="bg-white border border-[#cc9966] text-[#7a3939] px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#f7e0c4] transition shadow-sm">
-                <i class="fas fa-print mr-2"></i> Download Laporan
-            </button>
+             
             <a href="{{ route('penjualan.index') }}" class="bg-[#7a3939] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#8d4343] transition shadow-lg shadow-[#7a3939]/30">
                 + Transaksi Baru
             </a>

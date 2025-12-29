@@ -7,36 +7,46 @@ use App\Models\GajiKaryawan;
 use Illuminate\Http\Request;
 use App\Models\TransaksiPembelian;
 use App\Models\TransaksiPenjualan;
+use Illuminate\Support\Facades\Gate;
 
 class LaporanController extends Controller
 {
-      public function keuangan(Request $request)
+    // Di LaporanController.php
+    public function keuangan(Request $request)
     {
-        // 1. Tentukan Range Tanggal (Default: Bulan Ini)
+        Gate::authorize('roleOwner');
+
         $start = $request->query('start_date') ? Carbon::parse($request->query('start_date'))->startOfDay() : Carbon::now()->startOfMonth();
         $end = $request->query('end_date') ? Carbon::parse($request->query('end_date'))->endOfDay() : Carbon::now()->endOfDay();
 
-        // 2. Ambil Data Pemasukan (Penjualan)
+        // Data Pemasukan
         $pemasukan = TransaksiPenjualan::whereBetween('created_at', [$start, $end])->sum('total_bayar');
+        $total_diskon_diberikan = TransaksiPenjualan::whereBetween('created_at', [$start, $end])->sum('potongan');
 
-        // 3. Ambil Data Pengeluaran (Pembelian Barang + Gaji)
+        // Data Pengeluaran
         $pengeluaran_barang = TransaksiPembelian::whereBetween('created_at', [$start, $end])->sum('total');
         $pengeluaran_gaji = GajiKaryawan::whereBetween('tanggal_bayar', [$start, $end])->sum('jumlah_gaji');
-
         $total_pengeluaran = $pengeluaran_barang + $pengeluaran_gaji;
 
-        // 4. Hitung Laba Rugi
         $laba_rugi = $pemasukan - $total_pengeluaran;
 
-        // 5. Data Detail untuk Tabel
-        $list_penjualan = TransaksiPenjualan::whereBetween('created_at', [$start, $end])->latest()->get();
+        // List Data
+        $list_penjualan = TransaksiPenjualan::with('user')->whereBetween('created_at', [$start, $end])->latest()->get();
         $list_pembelian = TransaksiPembelian::whereBetween('created_at', [$start, $end])->latest()->get();
-        $list_gaji = GajiKaryawan::whereBetween('tanggal_bayar', [$start, $end])->latest()->get();
+        $list_gaji = GajiKaryawan::with('user')->whereBetween('tanggal_bayar', [$start, $end])->latest()->get();
 
         return view('dashboard.laporan.keuangan', compact(
-            'pemasukan', 'pengeluaran_barang', 'pengeluaran_gaji',
-            'total_pengeluaran', 'laba_rugi', 'start', 'end',
-            'list_penjualan', 'list_pembelian', 'list_gaji'
+            'pemasukan',
+            'pengeluaran_barang',
+            'pengeluaran_gaji',
+            'total_pengeluaran',
+            'laba_rugi',
+            'start',
+            'end',
+            'list_penjualan',
+            'list_pembelian',
+            'list_gaji',
+            'total_diskon_diberikan'
         ));
     }
 }
