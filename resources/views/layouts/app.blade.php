@@ -16,6 +16,7 @@
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         [x-cloak] { display: none !important; }
@@ -166,7 +167,7 @@
                             <p class="text-sm font-bold text-gray-700 leading-tight">{{ Auth::user()->name ?? 'Administrator' }}</p>
                             <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
                         </div>
-                        
+
                     </div>
                 </div>
             </header>
