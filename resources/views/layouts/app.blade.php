@@ -157,14 +157,7 @@
                             </svg>
                         </button>
 
-                        <div class="flex items-center gap-2">
-                             <div class="w-8 h-8 bg-gradient-to-br from-[#7a3939] to-[#cc9966] rounded-lg shadow-md flex items-center justify-center">
-                                <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                             </div>
-                             <h2 class="text-xl font-bold bg-gradient-to-r from-[#7a3939] to-[#cc9966] bg-clip-text text-transparent">
-                                 Ringkasan Beranda
-                             </h2>
-                        </div>
+
                     </div>
 
                     <!-- Profile/Notif (Optional Placeholder) -->
@@ -173,9 +166,7 @@
                             <p class="text-sm font-bold text-gray-700 leading-tight">{{ Auth::user()->name ?? 'Administrator' }}</p>
                             <p class="text-xs text-gray-500">{{ Auth::user()->email }}</p>
                         </div>
-                        <div class="h-10 w-10 rounded-full bg-gray-200 border-2 border-[#cc9966] overflow-hidden shadow-sm">
-                            <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name ?? 'A' }}&background=7a3939&color=fff" alt="Avatar">
-                        </div>
+                        
                     </div>
                 </div>
             </header>

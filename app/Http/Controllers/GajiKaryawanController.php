@@ -66,7 +66,7 @@ class GajiKaryawanController extends Controller
     {
         if (Gate::allows('roleOwner')) {
             GajiKaryawan::findOrFail($id)->delete();
-            return back()->with('success', 'Data gaji dihapus');
+            return redirect()->route('gaji.index')->with('success', 'Gaji berhasil dihapus!');
         }abort(403);
     }
 }

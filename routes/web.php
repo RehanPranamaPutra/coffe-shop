@@ -51,7 +51,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('pembelian', TransaksiPembelianController::class);
     Route::get('/gaji-karyawan',[GajiKaryawanController::class,'index'])->name('gaji.index');
     Route::post('/gaji-karyawan',[GajiKaryawanController::class,'store'])->name('gaji.store');
-    Route::get('/gaji-karyawan/{id}',[GajiKaryawanController::class,'destroy'])->name('gaji.destroy');
+    Route::delete('/gaji-karyawan/{id}',[GajiKaryawanController::class,'destroy'])->name('gaji.destroy');
 
     Route::get('/laporan/keuangan', [LaporanController::class, 'keuangan'])->name('laporan.keuangan');
 });

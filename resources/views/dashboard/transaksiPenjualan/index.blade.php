@@ -39,22 +39,28 @@
                             <img src="{{ asset('storage/' . $menu->gambar) }}" alt="{{ $menu->nama_menu }}"
                                 class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-110 {{ $isHabis ? 'grayscale opacity-50' : '' }}">
 
-                            <!-- Badge Status Stok -->
+                            <!-- Badge Status Stok (MENAMPILKAN ANGKA NYATA) -->
                             <div class="absolute top-3 left-3">
                                 @if ($isHabis)
                                     <span
-                                        class="bg-red-600 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">Habis</span>
-                                @elseif($menu->stok <= 5)
+                                        class="bg-red-600 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
+                                        Habis
+                                    </span>
+                                @elseif($menu->stok <= 10)
+                                    <!-- Warna Oranye untuk stok yang mulai menipis (dibawah 10) -->
                                     <span
-                                        class="bg-orange-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">Sisa
-                                        {{ $menu->stok }}</span>
+                                        class="bg-orange-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
+                                        Stok: {{ $menu->stok }}
+                                    </span>
                                 @else
+                                    <!-- Warna Hijau untuk stok aman -->
                                     <span
-                                        class="bg-emerald-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">Tersedia</span>
+                                        class="bg-emerald-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
+                                        Stok: {{ $menu->stok }}
+                                    </span>
                                 @endif
                             </div>
 
-                            <!-- Overlay "Stok Habis" agar lebih jelas -->
                             @if ($isHabis)
                                 <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
                                     <span
@@ -121,7 +127,7 @@
                         </div>
                         <div class="flex justify-between items-center pt-3 mt-1 border-t border-gray-200">
                             <span class="text-sm font-bold text-gray-900 uppercase tracking-widest">Total Bayar</span>
-                            <span id="total-harga" class="text-2xl font-black text-[#7a3939]">Rp 0</span>
+                            <span id="total-harga" class="text-1xl font-black text-[#7a3939]">Rp 0</span>
                         </div>
                     </div>
 
@@ -129,7 +135,7 @@
                     <div class="space-y-3">
                         <div class="relative">
                             <input type="text" id="dibayar"
-                                class="w-full bg-white border-none rounded-2xl py-4 px-5 text-xl font-black text-[#7a3939] shadow-inner focus:ring-2 focus:ring-[#cc9966] transition-all"
+                                class="w-full bg-white border-none rounded-2xl py-4 px-3 text-xl font-black text-[#7a3939] shadow-inner focus:ring-2 focus:ring-[#cc9966] transition-all"
                                 placeholder="Rp 0 (Uang Bayar)">
                         </div>
 
