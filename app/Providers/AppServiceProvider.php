@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             return $user->role === 'Owner';
         });
 
-        if (config('app.env') === 'production') {
+        if ($this->app->environment('production') || env('APP_ENV') === 'production') {
             URL::forceScheme('https');
         }
     }
