@@ -55,5 +55,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/laporan/keuangan', [LaporanController::class, 'keuangan'])->name('laporan.keuangan');
 });
+Route::get('/force-seed', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        return "Seeder Berhasil: <pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "Seeder Gagal. Error: " . $e->getMessage();
+    }
+});
 
 require __DIR__ . '/auth.php';
