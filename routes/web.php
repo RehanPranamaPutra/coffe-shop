@@ -57,10 +57,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 Route::get('/force-seed', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        return "Seeder Berhasil: <pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+        // Kita pakai migrate:fresh agar database BERSIH TOTAL sebelum diisi seeder
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true,
+        ]);
+        return "Database Berhasil Di-Reset & Di-Seed! <pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
     } catch (\Exception $e) {
-        return "Seeder Gagal. Error: " . $e->getMessage();
+        return "Gagal Reset Database. Error: " . $e->getMessage();
     }
 });
 
