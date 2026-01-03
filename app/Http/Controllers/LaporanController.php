@@ -14,39 +14,42 @@ class LaporanController extends Controller
     // Di LaporanController.php
     public function keuangan(Request $request)
     {
-        Gate::authorize('roleOwner');
+        // 1. Atur Rentang Tanggal
+        $start = $request->start_date ? Carbon::parse($request->start_date)->startOfDay() : Carbon::now()->startOfMonth();
+        $end = $request->end_date ? Carbon::parse($request->end_date)->endOfDay() : Carbon::now()->endOfDay();
 
-        $start = $request->query('start_date') ? Carbon::parse($request->query('start_date'))->startOfDay() : Carbon::now()->startOfMonth();
-        $end = $request->query('end_date') ? Carbon::parse($request->query('end_date'))->endOfDay() : Carbon::now()->endOfDay();
+        // 2. Ambil Data Pemasukan (Penjualan)
+        $penjualan = TransaksiPenjualan::with('user')
+            ->whereBetween('created_at', [$start, $end])
+            ->get();
 
-        // Data Pemasukan
-        $pemasukan = TransaksiPenjualan::whereBetween('created_at', [$start, $end])->sum('total_bayar');
-        $total_diskon_diberikan = TransaksiPenjualan::whereBetween('created_at', [$start, $end])->sum('potongan');
+        $total_penjualan_kotor = $penjualan->sum('total');
+        $total_potongan_promo = $penjualan->sum('potongan');
+        $pemasukan_bersih = $penjualan->sum('total_bayar');
 
-        // Data Pengeluaran
-        $pengeluaran_barang = TransaksiPembelian::whereBetween('created_at', [$start, $end])->sum('total');
-        $pengeluaran_gaji = GajiKaryawan::whereBetween('tanggal_bayar', [$start, $end])->sum('jumlah_gaji');
-        $total_pengeluaran = $pengeluaran_barang + $pengeluaran_gaji;
+        // 3. Ambil Data Pengeluaran (Pembelian Barang)
+        $total_pengeluaran_barang = TransaksiPembelian::whereBetween('created_at', [$start, $end])
+            ->sum('total');
 
-        $laba_rugi = $pemasukan - $total_pengeluaran;
+        // 4. Ambil Data Pengeluaran (Gaji Karyawan)
+        $total_pengeluaran_gaji = GajiKaryawan::whereBetween('tanggal_bayar', [$start, $end])
+            ->sum('jumlah_gaji');
 
-        // List Data
-        $list_penjualan = TransaksiPenjualan::with('user')->whereBetween('created_at', [$start, $end])->latest()->get();
-        $list_pembelian = TransaksiPembelian::whereBetween('created_at', [$start, $end])->latest()->get();
-        $list_gaji = GajiKaryawan::with('user')->whereBetween('tanggal_bayar', [$start, $end])->latest()->get();
+        // 5. Kalkulasi Akhir
+        $total_pengeluaran_akumulasi = $total_pengeluaran_barang + $total_pengeluaran_gaji;
+        $laba_rugi_bersih = $pemasukan_bersih - $total_pengeluaran_akumulasi;
 
-        return view('dashboard.laporan.keuangan', compact(
-            'pemasukan',
-            'pengeluaran_barang',
-            'pengeluaran_gaji',
-            'total_pengeluaran',
-            'laba_rugi',
-            'start',
-            'end',
-            'list_penjualan',
-            'list_pembelian',
-            'list_gaji',
-            'total_diskon_diberikan'
-        ));
+        return view('dashboard.laporan.keuangan', [
+            'start' => $start,
+            'end' => $end,
+            'list_penjualan' => $penjualan,
+            'penjualan_kotor' => $total_penjualan_kotor,
+            'potongan_promo' => $total_potongan_promo,
+            'pemasukan_bersih' => $pemasukan_bersih,
+            'pengeluaran_barang' => $total_pengeluaran_barang,
+            'pengeluaran_gaji' => $total_pengeluaran_gaji,
+            'total_pengeluaran' => $total_pengeluaran_akumulasi,
+            'laba_rugi' => $laba_rugi_bersih
+        ]);
     }
 }

@@ -16,8 +16,8 @@ class Promo extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'menu_id',
-        'jenis_promo', // enum: 'persen', 'nominal'
+        'menu_variant_id', // Pastikan ini ada
+        'jenis_promo',
         'nilai_diskon',
         'tanggal_mulai',
         'tanggal_selesai',
@@ -47,6 +47,11 @@ class Promo extends Model
         return $this->belongsTo(Menu::class, 'menu_id');
     }
 
+    public function variant()
+    {
+        return $this->belongsTo(MenuVariant::class, 'menu_variant_id');
+    }
+
     /**
      * Accessor untuk mendapatkan status promo.
      * Berguna di controller atau view untuk menentukan apakah promo Aktif/Akan Datang/Kadaluarsa.
@@ -67,6 +72,4 @@ class Promo extends Model
 
         return 'Aktif';
     }
-
-
 }

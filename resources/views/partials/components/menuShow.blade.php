@@ -3,174 +3,137 @@
 @section('title', $menu->nama_menu . ' - Access Coffee')
 
 @section('content')
-    <!-- x-data untuk mengatur jumlah pesanan -->
-    <div class="min-h-screen bg-[#FDF9F3] pt-28 pb-20" x-data="{ count: 1, maxStok: {{ $menu->stok }} }">
+    <!-- x-data: Inisialisasi dengan varian pertama -->
+    <div class="min-h-screen bg-[#FDF9F3] pt-28 pb-20"
+         x-data="{
+            selectedVariant: @js($menu->variants->first()),
+            count: 1,
+            calculatePrice(variant) {
+                let hargaAsli = parseFloat(variant.harga);
+                if (variant.promos && variant.promos.length > 0) {
+                    let promo = variant.promos[0];
+                    let diskon = promo.jenis_promo === 'persen' ? (hargaAsli * promo.nilai_diskon / 100) : promo.nilai_diskon;
+                    return hargaAsli - diskon;
+                }
+                return hargaAsli;
+            }
+         }">
 
         <div class="max-w-7xl mx-auto px-4">
 
-            <!-- BREADCRUMB (Navigasi Kecil) -->
-            <nav class="flex text-sm text-gray-500 mb-8 animate-fade-in-down">
-                <a href="{{ route('home') }}" class="hover:text-coffee-primary transition">Beranda</a>
+            <!-- BREADCRUMB -->
+            <nav class="flex text-sm text-gray-500 mb-8">
+                <a href="{{ route('home') }}" class="hover:text-[#7a3939] transition">Beranda</a>
                 <span class="mx-2">/</span>
-                <a href="{{ route('menu') }}" class="hover:text-coffee-primary transition">Menu</a>
+                <a href="{{ route('menu') }}" class="hover:text-[#7a3939] transition">Menu</a>
                 <span class="mx-2">/</span>
-                <span class="text-coffee-primary font-bold">{{ $menu->nama_menu }}</span>
+                <span class="text-[#7a3939] font-bold">{{ $menu->nama_menu }}</span>
             </nav>
 
-            <!-- MAIN CONTENT GRID -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-                <!-- 1. LEFT COLUMN: IMAGE GALLERY -->
+                <!-- 1. LEFT COLUMN: IMAGE -->
                 <div class="relative">
-                    <div class="aspect-square rounded-[2.5rem] overflow-hidden bg-white shadow-xl border border-coffee-secondary/20 relative group">
+                    <div class="aspect-square rounded-[3rem] overflow-hidden bg-white shadow-2xl border border-gray-100 relative group">
                         <img src="{{ asset('storage/'.$menu->gambar) }}"
                              alt="{{ $menu->nama_menu }}"
                              class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
 
-                        <!-- Badges -->
-                        <div class="absolute top-4 left-4 flex flex-col gap-2">
-                            <!-- Kategori -->
-                            <span class="bg-white/90 backdrop-blur text-coffee-primary px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm">
-                                {{ $menu->kategori }}
-                            </span>
-
-                            <!-- Promo -->
-                            @if($menu->activePromo)
-                                <span class="bg-red-500 text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm animate-pulse">
-                                    {{ $menu->label_diskon }} OFF
-                                </span>
-                            @endif
-                        </div>
+                        <!-- Badge Promo (Hanya Muncul Jika Varian Terpilih Ada Promo) -->
+                        <template x-if="selectedVariant.promos.length > 0">
+                            <div class="absolute top-6 left-6 bg-red-600 text-white px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg animate-bounce">
+                                Special Offer
+                            </div>
+                        </template>
                     </div>
-
-                    <!-- Decorative Blob -->
-                    <div class="absolute -bottom-10 -left-10 w-64 h-64 bg-coffee-secondary/20 rounded-full blur-3xl -z-10"></div>
                 </div>
 
-                <!-- 2. RIGHT COLUMN: PRODUCT INFO -->
-                <div class="space-y-8 lg:sticky lg:top-32">
-
-                    <!-- Title & Price -->
-                    <div class="border-b border-coffee-primary/10 pb-6">
-                        <h1 class="font-serif text-4xl md:text-5xl font-bold text-coffee-primary mb-4 leading-tight">
+                <!-- 2. RIGHT COLUMN: INFO -->
+                <div class="space-y-8">
+                    <div>
+                        <span class="text-[#cc9966] font-black uppercase text-xs tracking-[0.3em] mb-2 block">
+                            {{ $menu->category->nama_kategori }}
+                        </span>
+                        <h1 class="font-serif text-4xl md:text-5xl font-bold text-[#7a3939] mb-4 uppercase tracking-tighter">
                             {{ $menu->nama_menu }}
                         </h1>
 
-                        <div class="flex items-center gap-4">
-                            @if($menu->activePromo)
-                                <span class="text-3xl font-bold text-red-600">
-                                    Rp {{ number_format($menu->harga_akhir, 0, ',', '.') }}
+                        <!-- Dynamic Price Display -->
+                        <div class="flex items-end gap-3">
+                            <span class="text-4xl font-black text-[#7a3939]"
+                                  x-text="'Rp ' + calculatePrice(selectedVariant).toLocaleString('id-ID')">
+                            </span>
+                            <template x-if="selectedVariant.promos.length > 0">
+                                <span class="text-xl text-gray-300 line-through font-bold mb-1"
+                                      x-text="'Rp ' + parseInt(selectedVariant.harga).toLocaleString('id-ID')">
                                 </span>
-                                <span class="text-lg text-gray-400 line-through decoration-red-500/50">
-                                    Rp {{ number_format($menu->harga, 0, ',', '.') }}
-                                </span>
-                            @else
-                                <span class="text-3xl font-bold text-coffee-dark">
-                                    Rp {{ number_format($menu->harga, 0, ',', '.') }}
-                                </span>
-                            @endif
+                            </template>
                         </div>
                     </div>
 
-                    <!-- Description -->
+                    <!-- VARIANT SELECTOR (Kunci Utama) -->
                     <div>
-                        <h3 class="font-bold text-coffee-primary mb-2 text-lg">Deskripsi</h3>
-                        <p class="text-gray-500 leading-relaxed text-lg">
-                            {{ $menu->deskripsi }}
+                        <h3 class="font-black text-[#7a3939] uppercase text-xs tracking-widest mb-4">Pilih Variasi:</h3>
+                        <div class="flex flex-wrap gap-3">
+                            @foreach($menu->variants as $variant)
+                                <button @click="selectedVariant = @js($variant); count = 1"
+                                        class="px-6 py-3 rounded-2xl border-2 font-bold transition-all duration-300 text-sm"
+                                        :class="selectedVariant.id === {{ $variant->id }}
+                                                ? 'bg-[#7a3939] border-[#7a3939] text-white shadow-xl scale-105'
+                                                : 'bg-white border-gray-100 text-gray-400 hover:border-[#cc9966]'">
+                                    {{ $variant->nama_variasi }}
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Meta Info (Dinamis Berdasarkan Stok Varian) -->
+                    <div class="flex gap-6">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-50 flex items-center gap-3">
+                            <div class="p-2 bg-emerald-50 rounded-xl text-emerald-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" stroke-width="2"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase">Stok</p>
+                                <p class="font-black text-gray-800" x-text="selectedVariant.stok + ' Tersedia'"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Area -->
+                   
+
+                    <div>
+                        <h3 class="font-black text-[#7a3939] uppercase text-xs tracking-widest mb-2">Deskripsi Produk</h3>
+                        <p class="text-gray-500 leading-relaxed italic text-sm">
+                            "{{ $menu->deskripsi ?? 'Nikmati kesempurnaan rasa dari biji kopi pilihan yang diproses dengan dedikasi tinggi oleh barista kami.' }}"
                         </p>
                     </div>
-
-                    <!-- Meta Info (Stok & Terjual) -->
-                    <div class="flex gap-6">
-                        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
-                            <span class="text-xl">📦</span>
-                            <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold">Stok</p>
-                                <p class="font-bold {{ $menu->stok < 5 ? 'text-red-500' : 'text-coffee-dark' }}">
-                                    {{ $menu->stok }} Tersedia
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
-                            <span class="text-xl">🔥</span>
-                            <div>
-                                <p class="text-[10px] text-gray-400 uppercase font-bold">Terjual</p>
-                                <p class="font-bold text-coffee-dark">
-                                    {{ $menu->total_terjual ?? 0 }} Porsi
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- <!-- ACTION AREA (Alpine Logic) -->
-                    @if($menu->status == 'Tersedia' && $menu->stok > 0)
-                        <div class="pt-4 space-y-4">
-                            <!-- Quantity Selector -->
-                            <div class="flex items-center gap-4">
-                                <span class="font-bold text-coffee-primary">Jumlah:</span>
-                                <div class="flex items-center bg-white border-2 border-coffee-primary/10 rounded-full p-1 shadow-sm">
-                                    <button @click="if(count > 1) count--"
-                                            class="w-10 h-10 rounded-full hover:bg-coffee-secondary/20 text-coffee-primary flex items-center justify-center transition text-xl font-bold">
-                                        -
-                                    </button>
-                                    <input type="text" x-model="count" readonly
-                                           class="w-12 text-center bg-transparent font-bold text-coffee-dark outline-none">
-                                    <button @click="if(count < maxStok) count++"
-                                            class="w-10 h-10 rounded-full bg-coffee-primary text-white flex items-center justify-center hover:bg-coffee-primary/90 transition text-xl font-bold shadow-md">
-                                        +
-                                    </button>
-                                </div>
-                                <span class="text-xs text-red-500 font-medium" x-show="count >= maxStok" style="display: none;">
-                                    *Maksimal stok tercapai
-                                </span>
-                            </div>
-
-                            <!-- Buttons -->
-                            <div class="flex gap-4">
-                                <button class="flex-1 bg-white border-2 border-coffee-primary text-coffee-primary py-4 rounded-2xl font-bold hover:bg-coffee-secondary/10 transition flex items-center justify-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                    Masuk Keranjang
-                                </button>
-                                <button class="flex-1 bg-coffee-primary text-white py-4 rounded-2xl font-bold hover:bg-[#6d3333] transition shadow-lg shadow-coffee-primary/20 flex items-center justify-center gap-2">
-                                    Pesan Sekarang
-                                </button>
-                            </div>
-                        </div>
-                    @else
-                        <!-- Sold Out State -->
-                        <div class="bg-gray-100 p-6 rounded-2xl text-center border border-gray-200">
-                            <span class="text-3xl block mb-2">🚫</span>
-                            <h3 class="font-bold text-gray-500 text-lg">Maaf, Stok Habis</h3>
-                            <p class="text-sm text-gray-400">Silakan cek kembali nanti.</p>
-                        </div>
-                    @endif --}}
-
                 </div>
             </div>
 
-            <!-- ====================================== -->
-            <!-- 3. RELATED MENU SECTION                -->
-            <!-- ====================================== -->
+            <!-- RELATED MENU -->
             @if($relatedMenus->count() > 0)
-                <div class="mt-24 border-t border-coffee-primary/5 pt-16">
-                    <h2 class="font-serif text-3xl font-bold text-coffee-primary mb-8">Mungkin Anda juga suka</h2>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="mt-32">
+                    <h2 class="font-serif text-3xl font-bold text-[#7a3939] mb-10 uppercase tracking-tighter">Mungkin Kamu Juga Suka</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         @foreach($relatedMenus as $related)
-                            <a href="{{ route('menu.show', $related->slug) }}" class="group bg-white p-4 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                                <div class="h-40 rounded-xl overflow-hidden bg-gray-100 mb-4">
+                            @php $minPrice = $related->variants->min('harga'); @endphp
+                            <a href="{{ route('menu.show', $related->slug) }}" class="group bg-white p-5 rounded-[2rem] shadow-sm hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-[#cc9966]/20">
+                                <div class="h-48 rounded-[1.5rem] overflow-hidden mb-4 bg-gray-50">
                                     <img src="{{ asset('storage/'.$related->gambar) }}" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                                 </div>
-                                <h3 class="font-bold text-coffee-primary line-clamp-1 group-hover:text-coffee-secondary transition">
+                                <h3 class="font-black text-gray-800 uppercase text-xs truncate group-hover:text-[#7a3939] transition-colors">
                                     {{ $related->nama_menu }}
                                 </h3>
-                                <p class="text-sm text-gray-400 mt-1">Rp {{ number_format($related->harga, 0, ',', '.') }}</p>
+                                <p class="text-[10px] text-[#cc9966] font-bold mt-1 uppercase tracking-widest">
+                                    Mulai Rp {{ number_format($minPrice, 0, ',', '.') }}
+                                </p>
                             </a>
                         @endforeach
                     </div>
                 </div>
             @endif
-
         </div>
     </div>
 @endsection

@@ -13,14 +13,12 @@ return new class extends Migration
     {
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_menu');
-            $table->string('slug');
-            $table->decimal('harga',12,2);
-            $table->integer('stok');
-            $table->string('kategori')->nullable();
-            $table->enum('status',['Tersedia','Tidak Tersedia'])->default('Tersedia');
+            $table->foreignId('categories_id')->constrained()->onDelete('cascade');
+            $table->string('nama_menu');     // Contoh: Americano
+            $table->string('slug');     // Contoh: Americano
             $table->text('deskripsi')->nullable();
             $table->string('gambar');
+            $table->enum('status', ['Tersedia', 'Tidak Tersedia'])->default('Tersedia');
             $table->timestamps();
         });
     }

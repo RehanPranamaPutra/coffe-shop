@@ -24,6 +24,11 @@ class TransaksiItem extends Model
         return $this->belongsTo(TransaksiPenjualan::class, 'transaksi_id');
     }
 
+    public function variant()
+    {
+        return $this->belongsTo(MenuVariant::class, 'variant_id');
+    }
+
     /**
      * Relasi ke menu
      */

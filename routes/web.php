@@ -4,8 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\VarianController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GajiKaryawanController;
 use App\Http\Controllers\TransaksiPembelianController;
@@ -35,8 +37,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
     });
 
+    Route::resource('kategori', CategoryController::class);
+
     // Produk Management (Resource Routes)
     Route::resource('produk', ProdukController::class);
+    Route::resource('produk.varian', VarianController::class);
 
     // Promo Management (Resource Routes)
     Route::resource('promo', PromoController::class);

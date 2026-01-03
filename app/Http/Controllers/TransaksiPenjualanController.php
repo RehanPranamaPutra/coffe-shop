@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use Exception;
 use App\Models\Menu;
+use App\Models\MenuVariant;
 use App\Models\Promo;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -17,15 +18,10 @@ class TransaksiPenjualanController extends Controller
 {
     public function index()
     {
-        $now = Carbon::now();
-        // Ambil menu yang tersedia beserta promo yang sedang aktif (berdasarkan tanggal dan status)
-        $menus = Menu::with(['promos' => function ($query) use ($now) {
-            $query->where('status', 'aktif')
-                ->where('tanggal_mulai', '<=', $now)
-                ->where('tanggal_selesai', '>=', $now);
-        }])->where('status', 'Tersedia')->get();
-
-        return view('dashboard.transaksiPenjualan.index', compact('menus'));
+        $menus = Menu::with(['variants.promos'])->where('status', 'Tersedia')->get();
+        // Kirim waktu sekarang dari server ke view
+        $serverTime = now()->toIso8601String();
+        return view('dashboard.transaksiPenjualan.index', compact('menus', 'serverTime'));
     }
 
     public function store(Request $request)
@@ -33,36 +29,32 @@ class TransaksiPenjualanController extends Controller
         $cart = json_decode($request->data, true);
         if (!$cart) return back()->with('error', 'Keranjang kosong!');
 
-        $now = Carbon::now();
-        $totalBelanjaKotor = 0;
-        $totalPotonganPromo = 0;
-        $validCart = [];
+        $now = now();
+        $totalKotor = 0;
+        $totalPotongan = 0;
+        $itemsToSave = [];
 
         DB::beginTransaction();
         try {
             foreach ($cart as $item) {
-                // Ambil data menu dengan lock untuk menghindari race condition
-                $menu = Menu::with(['promos' => function ($q) use ($now) {
+                // 1. Ambil data varian dan promo aktifnya
+                $variant = MenuVariant::with(['promos' => function ($q) use ($now) {
                     $q->where('status', 'aktif')
                         ->where('tanggal_mulai', '<=', $now)
                         ->where('tanggal_selesai', '>=', $now);
-                }])->lockForUpdate()->find($item['id']);
+                }])->lockForUpdate()->find($item['variant_id']);
 
-                if (!$menu) continue;
-
-                $qty = (int) $item['qty'];
-
-                // 1. Validasi Stok (Cek apakah stok cukup)
-                if ($menu->stok < $qty) {
-                    throw new Exception("Stok untuk menu '{$menu->nama_menu}' tidak mencukupi. Sisa stok: {$menu->stok}");
+                if (!$variant) continue;
+                if ($variant->stok < $item['qty']) {
+                    throw new Exception("Stok {$variant->nama_variasi} tidak cukup!");
                 }
 
-                $hargaAsli = $menu->harga;
+                $hargaAsli = $variant->harga;
                 $diskonSatuan = 0;
                 $promoId = null;
 
-                // Hitung ulang promo
-                $activePromo = $menu->promos->first();
+                // 2. Hitung Promo (Persen vs Nominal)
+                $activePromo = $variant->promos->first();
                 if ($activePromo) {
                     $promoId = $activePromo->id;
                     if ($activePromo->jenis_promo == 'persen') {
@@ -72,73 +64,69 @@ class TransaksiPenjualanController extends Controller
                     }
                 }
 
-                $subtotalItem = ($hargaAsli - $diskonSatuan) * $qty;
-                $totalBelanjaKotor += ($hargaAsli * $qty);
-                $totalPotonganPromo += ($diskonSatuan * $qty);
+                $subtotalItem = ($hargaAsli - $diskonSatuan) * $item['qty'];
 
-                $validCart[] = [
-                    'menu_id' => $menu->id,
-                    'jumlah' => $qty,
-                    'harga_satuan' => $hargaAsli,
-                    'diskon' => $diskonSatuan * $qty,
+                $totalKotor += ($hargaAsli * $item['qty']);
+                $totalPotongan += ($diskonSatuan * $item['qty']);
+
+                $itemsToSave[] = [
+                    'variant' => $variant,
+                    'menu_id' => $variant->menu_id,
                     'promo_id' => $promoId,
-                    'subtotal' => $subtotalItem,
-                    'model' => $menu // Simpan instance model untuk mempermudah decrement nanti
+                    'qty' => $item['qty'],
+                    'harga_satuan' => $hargaAsli,
+                    'diskon' => $diskonSatuan * $item['qty'],
+                    'subtotal' => $subtotalItem
                 ];
             }
 
-            $totalHarusBayar = $totalBelanjaKotor - $totalPotonganPromo;
-            $dibayar = (int) preg_replace('/[^0-9]/', '', $request->dibayar);
+            $totalBersih = $totalKotor - $totalPotongan;
+            $dibayar = (int) preg_replace('/\D/', '', $request->dibayar);
 
-            if ($dibayar < $totalHarusBayar) {
-                throw new Exception('Uang tidak cukup. Total: ' . number_format($totalHarusBayar));
+            if ($dibayar < $totalBersih) {
+                throw new Exception("Uang kurang! Total: Rp " . number_format($totalBersih));
             }
 
-            $kodeTransaksi = 'TRX-' . $now->format('Ymd') . '-' . strtoupper(Str::random(5));
-
-            // 2. Simpan Header Transaksi
+            // 3. Simpan Transaksi
             $transaksi = TransaksiPenjualan::create([
+                'kode_transaksi' => 'TRX-' . time(),
                 'user_id' => auth()->id(),
-                'kode_transaksi' => $kodeTransaksi,
-                'total' => $totalBelanjaKotor,
-                'potongan' => $totalPotonganPromo,
-                'total_bayar' => $totalHarusBayar,
+                'total' => $totalKotor,
+                'potongan' => $totalPotongan,
+                'total_bayar' => $totalBersih,
                 'dibayar' => $dibayar,
-                'kembalian' => $dibayar - $totalHarusBayar,
+                'kembalian' => $dibayar - $totalBersih,
             ]);
 
-            // 3. Simpan Detail Item dan Kurangi Stok
-            foreach ($validCart as $v) {
+            foreach ($itemsToSave as $v) {
                 TransaksiItem::create([
                     'transaksi_id' => $transaksi->id,
                     'menu_id' => $v['menu_id'],
-                    'jumlah' => $v['jumlah'],
+                    'variant_id' => $v['variant']->id,
+                    'promo_id' => $v['promo_id'],
+                    'jumlah' => $v['qty'],
                     'harga_satuan' => $v['harga_satuan'],
-                    'subtotal' => $v['subtotal'],
                     'diskon' => $v['diskon'],
-                    'promo_id' => $v['promo_id']
+                    'subtotal' => $v['subtotal'],
                 ]);
-
-                // PENGURANGAN STOK
-                $menuModel = $v['model'];
-                $menuModel->decrement('stok', $v['jumlah']);
-
-                // Opsional: Jika stok menjadi 0, ubah status menjadi 'Tidak Tersedia'
-                if ($menuModel->stok <= 0) {
-                    $menuModel->update(['status' => 'Tidak Tersedia']);
-                }
+                $v['variant']->decrement('stok', $v['qty']);
             }
 
             DB::commit();
-            return redirect()->route('transaksi.struk', ['kode' => $kodeTransaksi]);
+            return redirect()->route('transaksi.struk', ['kode' => $transaksi->kode_transaksi])
+                ->with('success', 'Transaksi Berhasil!');
         } catch (Exception $e) {
             DB::rollBack();
             return back()->with('error', $e->getMessage());
         }
     }
+
     public function struk($kode)
     {
-        $transaksi = TransaksiPenjualan::with(['items.menu', 'items.promo'])
+        $transaksi = TransaksiPenjualan::with([
+            'user',
+            'items.menu.variants' // Tarik menu dan semua pilihan harganya (Robusta, Arabica, dll)
+        ])
             ->where('kode_transaksi', $kode)
             ->firstOrFail();
 

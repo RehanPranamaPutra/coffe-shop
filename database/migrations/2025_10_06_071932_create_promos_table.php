@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('promos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('menu_id')->constrained('menus');
+            $table->foreignId('menu_variant_id')->constrained('menu_variants')->onDelete('cascade');
             $table->enum('jenis_promo', ['persen', 'nominal']);
             $table->decimal('nilai_diskon', 12, 2);
             $table->dateTime('tanggal_mulai');
