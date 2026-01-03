@@ -21,11 +21,11 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call([
             UserSeeder::class,
-            MenuSeeder::class,
-            PromosiSeeder::class,
-            TransaksiPenjualanSeeder::class,
-            TransaksiItemSeeder::class,
-            TransaksiPembelianSeeder::class,
+            // MenuSeeder::class,
+            // PromosiSeeder::class,
+            // TransaksiPenjualanSeeder::class,
+            // TransaksiItemSeeder::class,
+            // TransaksiPembelianSeeder::class,
         ]);
     }
 }
