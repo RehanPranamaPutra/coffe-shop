@@ -1,372 +1,302 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="grid grid-cols-12 gap-6 p-2">
-        <!-- 🛍️ KOLOM KIRI: DAFTAR PRODUK -->
-        <div class="col-span-12 lg:col-span-8">
-            <div class="mb-6 relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-4">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" />
-                    </svg>
-                </span>
-                <input id="search" type="text" placeholder="Cari menu favorit..."
-                    class="w-full pl-12 pr-4 py-4 border-none shadow-sm rounded-2xl focus:ring-2 focus:ring-[#cc9966] transition-all text-sm">
-            </div>
-
-            <div id="product-list" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                @foreach ($menus as $menu)
-                    @php
-                        $activePromo = $menu->promos->first();
-                        $diskon = 0;
-                        if ($activePromo) {
-                            $diskon =
-                                $activePromo->jenis_promo == 'persen'
-                                    ? ($menu->harga * $activePromo->nilai_diskon) / 100
-                                    : $activePromo->nilai_diskon;
-                        }
-                        $hargaSetelahDiskon = $menu->harga - $diskon;
-                        $isHabis = $menu->stok <= 0;
-                    @endphp
-
-                    <!-- Produk Card tetap muncul meski stok 0 -->
-                    <div class="product-card group bg-white rounded-3xl shadow-sm border border-gray-100 hover:shadow-2xl hover:border-[#cc9966]/30 cursor-pointer transition-all duration-300 overflow-hidden relative"
-                        data-id="{{ $menu->id }}" data-nama="{{ $menu->nama_menu }}" data-harga="{{ $menu->harga }}"
-                        data-diskon="{{ $diskon }}" data-stok="{{ $menu->stok }}">
-
-                        <div class="relative overflow-hidden">
-                            <!-- Gambar menjadi hitam putih dan agak transparan jika habis -->
-                            <img src="{{ asset('storage/' . $menu->gambar) }}" alt="{{ $menu->nama_menu }}"
-                                class="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-110 {{ $isHabis ? 'grayscale opacity-50' : '' }}">
-
-                            <!-- Badge Status Stok (MENAMPILKAN ANGKA NYATA) -->
-                            <div class="absolute top-3 left-3">
-                                @if ($isHabis)
-                                    <span
-                                        class="bg-red-600 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
-                                        Habis
-                                    </span>
-                                @elseif($menu->stok <= 10)
-                                    <!-- Warna Oranye untuk stok yang mulai menipis (dibawah 10) -->
-                                    <span
-                                        class="bg-orange-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
-                                        Stok: {{ $menu->stok }}
-                                    </span>
-                                @else
-                                    <!-- Warna Hijau untuk stok aman -->
-                                    <span
-                                        class="bg-emerald-500 text-white text-[9px] px-2 py-1 rounded-full font-bold uppercase shadow-lg">
-                                        Stok: {{ $menu->stok }}
-                                    </span>
-                                @endif
-                            </div>
-
-                            @if ($isHabis)
-                                <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                    <span
-                                        class="text-white font-black text-xs uppercase tracking-widest drop-shadow-md">Sold
-                                        Out</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="p-4 text-center {{ $isHabis ? 'opacity-50' : '' }}">
-                            <h3 class="font-bold text-gray-800 text-sm truncate mb-1 uppercase">{{ $menu->nama_menu }}</h3>
-                            <div class="flex flex-col items-center">
-                                @if ($diskon > 0)
-                                    <span class="text-gray-400 line-through text-[10px]">Rp
-                                        {{ number_format($menu->harga, 0, ',', '.') }}</span>
-                                    <span class="text-[#7a3939] font-black italic">Rp
-                                        {{ number_format($hargaSetelahDiskon, 0, ',', '.') }}</span>
-                                @else
-                                    <span class="text-[#7a3939] font-black">Rp
-                                        {{ number_format($menu->harga, 0, ',', '.') }}</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
+<div class="grid grid-cols-12 gap-6 p-2">
+    <!-- 🛍️ KOLOM KIRI: DAFTAR MENU -->
+    <div class="col-span-12 lg:col-span-8">
+        <div class="mb-6">
+            <input id="search" type="text" placeholder="Cari menu kopi..."
+                class="w-full pl-6 pr-6 py-4 border-none shadow-xl rounded-3xl focus:ring-2 focus:ring-[#cc9966] transition-all text-sm">
         </div>
 
-        <!-- 💰 KOLOM KANAN: KERANJANG MINIMALIS -->
-        <div class="col-span-12 lg:col-span-4">
-            <div
-                class="bg-white rounded-[2.5rem] shadow-2xl border border-gray-50 flex flex-col h-[calc(100vh-120px)] sticky top-6 overflow-hidden">
+        <div id="product-list" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+            @foreach ($menus as $menu)
+                @php $isHabis = $menu->variants->sum('stok') <= 0; @endphp
+                <div class="product-card group bg-white rounded-[2rem] shadow-sm border border-gray-100 p-3 cursor-pointer hover:shadow-2xl transition-all duration-300 relative"
+                    onclick='openVariantModal(@json($menu))'>
 
-                <!-- Header Keranjang -->
-                <div class="p-6 border-b border-gray-50 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-black text-gray-900">Keranjang</h2>
-                        <p class="text-xs text-gray-400 font-medium">Pesanan Pelanggan</p>
+                    <div class="relative overflow-hidden rounded-[1.5rem] mb-3">
+                        <img src="{{ asset('storage/' . $menu->gambar) }}" class="w-full h-40 object-cover group-hover:scale-110 transition {{ $isHabis ? 'grayscale opacity-40' : '' }}">
+                        <div class="absolute top-3 left-3">
+                            <span class="{{ $isHabis ? 'bg-red-600' : 'bg-[#10b981]' }} text-white text-[8px] px-2 py-1 rounded-full font-black uppercase shadow-lg">
+                                {{ $isHabis ? 'Habis' : 'Tersedia' }}
+                            </span>
+                        </div>
                     </div>
-                    <button onclick="clearCart()" class="text-gray-300 hover:text-red-500 transition-colors">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                stroke-width="2" />
-                        </svg>
-                    </button>
+
+                    <div class="text-center px-2 pb-2">
+                        <h3 class="font-black text-gray-800 text-xs uppercase truncate tracking-tight">{{ $menu->nama_menu }}</h3>
+                        <p class="text-[#7a3939] font-black text-sm mt-1 italic">
+                            Mulai dari <br> Rp {{ number_format($menu->variants->min('harga'), 0, ',', '.') }}
+                        </p>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    <!-- 💰 KOLOM KANAN: KERANJANG MINIMALIS MODERN -->
+    <div class="col-span-12 lg:col-span-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl flex flex-col h-[calc(100vh-120px)] sticky top-6 overflow-hidden border border-gray-50">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-black text-[#7a3939] uppercase tracking-tighter">Ringkasan Pesanan</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Access Coffee POS</p>
+                </div>
+                <button onclick="clearCart()" class="text-gray-300 hover:text-red-500 p-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" /></svg>
+                </button>
+            </div>
+
+            <!-- List Item Keranjang -->
+            <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-gray-50/20">
+                <!-- Dinamis -->
+            </div>
+
+            <!-- Footer Perhitungan -->
+            <div class="p-6 bg-white border-t border-gray-100 space-y-4">
+                <div class="space-y-1.5 text-xs font-bold uppercase text-gray-400">
+                    <div class="flex justify-between"><span>Subtotal</span> <span id="label-subtotal">Rp 0</span></div>
+                    <div class="flex justify-between text-red-500"><span>Hemat (Promo)</span> <span id="label-diskon">- Rp 0</span></div>
+                    <div class="flex justify-between items-center pt-2 mt-1 border-t-2 border-dashed border-gray-100">
+                        <span class="text-gray-900 tracking-widest font-black uppercase">Total Bayar</span>
+                        <span id="label-total" class="text-2xl font-black text-[#7a3939]">Rp 0</span>
+                    </div>
                 </div>
 
-                <!-- List Item (Minimalis Card) -->
-                <div id="cart-list" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                    <!-- Item akan muncul di sini via JS -->
-                </div>
+                <div class="space-y-3 pt-2">
+                    <input type="text" id="dibayar" placeholder="Uang Bayar (Rp)" class="w-full border-none bg-gray-100 rounded-2xl py-4 text-center text-xl font-black text-[#7a3939] focus:ring-2 focus:ring-[#cc9966] shadow-inner">
 
-                <!-- Footer Perhitungan -->
-                <div class="p-6 bg-gray-50/50 space-y-4 border-t border-gray-100">
-                    <div class="space-y-2">
-                        <div class="flex justify-between text-xs text-gray-500 font-medium">
-                            <span>Subtotal</span>
-                            <span id="total-kotor">Rp 0</span>
-                        </div>
-                        <div class="flex justify-between text-xs text-red-500 font-medium">
-                            <span>Diskon Promo</span>
-                            <span id="total-diskon">- Rp 0</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-3 mt-1 border-t border-gray-200">
-                            <span class="text-sm font-bold text-gray-900 uppercase tracking-widest">Total Bayar</span>
-                            <span id="total-harga" class="text-1xl font-black text-[#7a3939]">Rp 0</span>
-                        </div>
+                    <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                        <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Kembalian</span>
+                        <span id="label-kembalian" class="font-black text-emerald-700 text-lg">Rp 0</span>
                     </div>
 
-                    <!-- Input Pembayaran -->
-                    <div class="space-y-3">
-                        <div class="relative">
-                            <input type="text" id="dibayar"
-                                class="w-full bg-white border-none rounded-2xl py-4 px-3 text-xl font-black text-[#7a3939] shadow-inner focus:ring-2 focus:ring-[#cc9966] transition-all"
-                                placeholder="Rp 0 (Uang Bayar)">
-                        </div>
-
-                        <div class="flex justify-between items-center px-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kembalian</span>
-                            <span id="kembalian" class="font-bold text-emerald-600">Rp 0</span>
-                        </div>
-
-                        <form id="form-transaksi" method="POST" action="{{ route('transaksi.store') }}">
-                            @csrf
-                            <input type="hidden" name="data" id="input-data">
-                            <input type="hidden" name="dibayar" id="dibayar-hidden">
-                            <button type="submit" id="btn-buat-pesanan"
-                                class="w-full bg-gray-200 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled>
-                                Bayar Sekarang
-                            </button>
-                        </form>
-                    </div>
+                    <form id="form-transaksi" method="POST" action="{{ route('transaksi.store') }}">
+                        @csrf
+                        <input type="hidden" name="data" id="input-data">
+                        <input type="hidden" name="dibayar" id="dibayar-hidden">
+                        <button type="submit" id="btn-bayar" disabled class="w-full bg-gray-200 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all transform active:scale-95">
+                            Konfirmasi Pembayaran
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        let cart = [];
-        let totalNetto = 0;
+<!-- 🏷️ MODAL PILIH VARIAN -->
+<div id="variant-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-md shadow-2xl overflow-hidden transform transition-all duration-300">
+        <div class="p-6 bg-[#7a3939] text-white flex justify-between items-center font-black">
+            <h3 id="modal-menu-name" class="uppercase tracking-widest text-lg">PILIH VARIAN</h3>
+            <button onclick="closeVariantModal()" class="text-2xl">&times;</button>
+        </div>
+        <div id="variant-container" class="p-5 space-y-3 max-h-[60vh] overflow-y-auto"></div>
+    </div>
+</div>
 
-        // SweetAlert Notif
-        function notify(title, text, icon) {
-            Swal.fire({
-                title,
-                text,
-                icon,
-                confirmButtonColor: '#7a3939',
-                timer: 2000
-            });
-        }
+<script>
+    // 1. STATE MANAGEMENT
+    window.cart = [];
+    window.currentGrandTotal = 0;
 
-        // 1. Tambah Produk
-        // 1. Tambah Produk & Pengecekan Stok Habis
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', () => {
-                const id = card.dataset.id;
-                const nama = card.dataset.nama;
-                const harga = parseFloat(card.dataset.harga);
-                const diskonPerItem = parseFloat(card.dataset.diskon || 0);
-                const stokMax = parseInt(card.dataset.stok);
+    // 2. FUNGSI DETEKSI PROMO (Logic Paling Akurat)
+    function getActivePromo(variant) {
+        if (!variant.promos || variant.promos.length === 0) return null;
 
-                // JIKA STOK HABIS: Tampilkan notifikasi SweetAlert2
-                if (stokMax <= 0) {
-                    Swal.fire({
-                        title: 'Menu Tidak Tersedia',
-                        text: `Maaf, stok untuk menu "${nama}" sudah habis dan tidak dapat dipesan saat ini.`,
-                        icon: 'warning',
-                        confirmButtonColor: '#7a3939', // Warna Maroon
-                        confirmButtonText: 'Tutup',
-                        background: '#fff',
-                        backdrop: `rgba(122, 57, 57, 0.2)` // Overlay Maroon transparan
-                    });
-                    return; // Berhenti di sini, jangan masukkan ke keranjang
-                }
+        // Ambil waktu sekarang dari komputer kasir
+        const now = new Date();
+        const nowTime = now.getTime();
 
-                const existing = cart.find(item => item.id === id);
-                if (existing) {
-                    if (existing.qty >= stokMax) {
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'error',
-                            title: 'Batas stok tercapai!',
-                            showConfirmButton: false,
-                            timer: 2000
-                        });
-                        return;
-                    }
-                    existing.qty++;
-                } else {
-                    cart.push({
-                        id,
-                        nama,
-                        harga,
-                        diskonPerItem,
-                        qty: 1,
-                        stokMax
-                    });
-                    // Notifikasi Sukses Tambah (Opsional)
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 1000,
-                        timerProgressBar: true,
-                    });
-                    Toast.fire({
-                        icon: 'success',
-                        title: `${nama} masuk keranjang`
-                    });
-                }
-                renderCart();
-            });
+        return variant.promos.find(p => {
+            // Kita pastikan format tanggal valid untuk browser (YYYY-MM-DDTHH:mm:ss)
+            const startDate = new Date(p.tanggal_mulai.replace(' ', 'T')).getTime();
+            const endDate = new Date(p.tanggal_selesai.replace(' ', 'T')).getTime();
+
+            const isStatusAktif = p.status.toLowerCase() === 'aktif';
+            const isTimeMatch = nowTime >= startDate && nowTime <= endDate;
+
+            return isStatusAktif && isTimeMatch;
         });
+    }
 
-        // 2. Render List Keranjang (Minimalis & Input Manual)
-        function renderCart() {
-            const list = document.getElementById('cart-list');
-            list.innerHTML = '';
-            let kotor = 0,
-                diskon = 0;
+    // 3. LOGIKA MODAL (PILIH VARIAN)
+    window.openVariantModal = function(menu) {
+        const modal = document.getElementById('variant-modal');
+        const container = document.getElementById('variant-container');
+        document.getElementById('modal-menu-name').innerText = menu.nama_menu;
 
-            if (cart.length === 0) {
-                list.innerHTML = `
-                    <div class="flex flex-col items-center justify-center py-20 opacity-20">
-                        <svg class="h-16 w-16 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" stroke-width="2"/></svg>
-                        <p class="text-xs font-bold uppercase tracking-widest">Belum Ada Pesanan</p>
+        container.innerHTML = ''; // Reset kontainer varian
+
+        menu.variants.forEach(v => {
+            const isHabis = v.stok <= 0;
+            const promo = getActivePromo(v); // Cek promo otomatis
+
+            let hargaAsli = parseFloat(v.harga);
+            let diskonSatuan = 0;
+            let hargaFinal = hargaAsli;
+
+            if (promo) {
+                const nilai = parseFloat(promo.nilai_diskon);
+                diskonSatuan = promo.jenis_promo === 'persen' ? (hargaAsli * nilai / 100) : nilai;
+                hargaFinal = hargaAsli - diskonSatuan;
+            }
+
+            const btn = document.createElement('button');
+            btn.className = `w-full flex justify-between items-center p-5 border-2 rounded-2xl transition-all ${isHabis ? 'opacity-30 cursor-not-allowed bg-gray-50' : 'border-gray-50 hover:border-[#cc9966] hover:bg-[#cc9966]/5 shadow-sm'}`;
+            btn.disabled = isHabis;
+
+            btn.onclick = () => {
+                addToCart(v, menu.nama_menu, diskonSatuan, promo ? promo.id : null);
+                closeVariantModal();
+            };
+
+            // HTML UNTUK HARGA (Menampilkan Harga Coret Jika Promo)
+            let priceHTML = `<span class="font-black text-[#7a3939] text-sm">Rp ${Math.round(hargaFinal).toLocaleString('id-ID')}</span>`;
+            if (promo) {
+                priceHTML = `
+                    <div class="text-right flex flex-col">
+                        <span class="text-[10px] text-gray-400 line-through font-bold">Rp ${Math.round(hargaAsli).toLocaleString('id-ID')}</span>
+                        <span class="font-black text-red-600 text-sm italic">PROMO Rp ${Math.round(hargaFinal).toLocaleString('id-ID')}</span>
                     </div>`;
             }
 
-            cart.forEach((item, index) => {
-                const subNetto = (item.harga - item.diskonPerItem) * item.qty;
-                kotor += (item.harga * item.qty);
-                diskon += (item.diskonPerItem * item.qty);
+            btn.innerHTML = `
+                <div class="text-left">
+                    <span class="font-black text-gray-800 block uppercase text-sm tracking-tight">${v.nama_variasi}</span>
+                    <span class="text-[9px] text-gray-400 font-bold uppercase">Stok: ${v.stok}</span>
+                </div>
+                ${priceHTML}
+            `;
+            container.appendChild(btn);
+        });
 
-                list.innerHTML += `
-                    <div class="bg-white border border-gray-100 rounded-2xl p-3 flex items-center gap-3 group hover:border-[#cc9966]/50 transition-all shadow-sm">
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-xs font-bold text-gray-800 truncate uppercase">${item.nama}</h4>
-                            <p class="text-[10px] text-gray-400 font-medium">Rp ${item.harga.toLocaleString('id-ID')}</p>
-                        </div>
+        modal.classList.replace('hidden', 'flex');
+    }
 
-                        <div class="flex items-center bg-gray-50 rounded-lg p-1">
-                            <button onclick="updateQty(${index}, -1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
-                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 12H4" stroke-width="3"/></svg>
-                            </button>
-                            <input type="number" value="${item.qty}"
-                                class="w-10 bg-transparent border-none text-center text-xs font-black p-0 focus:ring-0"
-                                onchange="manualEditQty(${index}, this.value)">
-                            <button onclick="updateQty(${index}, 1)" class="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-emerald-500 transition-colors">
-                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="3"/></svg>
-                            </button>
-                        </div>
+    window.closeVariantModal = function() {
+        document.getElementById('variant-modal').classList.replace('flex', 'hidden');
+    }
 
-                        <div class="text-right min-w-[70px]">
-                            <p class="text-[11px] font-black text-gray-800">Rp ${subNetto.toLocaleString('id-ID')}</p>
+    // 4. LOGIKA KERANJANG
+    function addToCart(variant, menuNama, diskonPerItem, promoId) {
+        const existing = window.cart.find(i => i.variant_id === variant.id);
+
+        if (existing) {
+            if (existing.qty >= variant.stok) return alert('Batas stok tercapai!');
+            existing.qty++;
+        } else {
+            window.cart.push({
+                variant_id: variant.id,
+                menu_id: variant.menu_id,
+                nama: menuNama + ' - ' + variant.nama_variasi,
+                harga: parseFloat(variant.harga),
+                diskonPerItem: parseFloat(diskonPerItem || 0),
+                promo_id: promoId,
+                qty: 1,
+                stokMax: variant.stok
+            });
+        }
+        renderCart();
+    }
+
+    function renderCart() {
+        const list = document.getElementById('cart-list');
+        list.innerHTML = '';
+        let subtotal = 0, totalPotongan = 0;
+
+        if (window.cart.length === 0) {
+            list.innerHTML = `<div class="py-20 text-center opacity-20 text-[10px] font-black uppercase tracking-[0.3em]">Keranjang Kosong</div>`;
+        }
+
+        window.cart.forEach((item, index) => {
+            const hargaNetto = item.harga - item.diskonPerItem;
+            subtotal += (item.harga * item.qty);
+            totalPotongan += (item.diskonPerItem * item.qty);
+
+            list.innerHTML += `
+                <div class="bg-white rounded-2xl p-4 flex justify-between items-center shadow-sm border border-gray-100 hover:border-[#cc9966]/30 transition-all group">
+                    <div class="flex-1 pr-3 truncate">
+                        <h4 class="text-[10px] font-black text-gray-800 uppercase leading-tight truncate">${item.nama}</h4>
+                        <div class="mt-1 flex gap-2 items-center">
+                            ${item.diskonPerItem > 0 ? `<span class="text-[9px] text-gray-300 line-through font-bold">Rp ${item.harga.toLocaleString('id-ID')}</span>` : ''}
+                            <span class="text-[11px] font-black text-[#7a3939]">Rp ${Math.round(hargaNetto).toLocaleString('id-ID')}</span>
                         </div>
                     </div>
-                `;
-            });
-
-            totalNetto = kotor - diskon;
-            document.getElementById('total-kotor').innerText = 'Rp ' + kotor.toLocaleString('id-ID');
-            document.getElementById('total-diskon').innerText = '- Rp ' + diskon.toLocaleString('id-ID');
-            document.getElementById('total-harga').innerText = 'Rp ' + totalNetto.toLocaleString('id-ID');
-            document.getElementById('input-data').value = JSON.stringify(cart);
-            updateLogicPembayaran();
-        }
-
-        function updateQty(index, change) {
-            const item = cart[index];
-            if (change > 0 && item.qty >= item.stokMax) return notify('Gagal', 'Stok tidak mencukupi!', 'error');
-            item.qty += change;
-            if (item.qty < 1) cart.splice(index, 1);
-            renderCart();
-        }
-
-        function manualEditQty(index, value) {
-            let val = parseInt(value);
-            const item = cart[index];
-            if (isNaN(val) || val < 1) {
-                cart.splice(index, 1);
-            } else if (val > item.stokMax) {
-                notify('Stok Kurang', 'Hanya tersedia ' + item.stokMax, 'warning');
-                item.qty = item.stokMax;
-            } else {
-                item.qty = val;
-            }
-            renderCart();
-        }
-
-        function clearCart() {
-            Swal.fire({
-                title: 'Kosongkan Keranjang?',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#7a3939',
-                confirmButtonText: 'Ya, Bersihkan!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    cart = [];
-                    renderCart();
-                }
-            });
-        }
-
-        // Logic Pembayaran & Tombol
-        const dibayarInput = document.getElementById('dibayar');
-        dibayarInput.addEventListener('input', function(e) {
-            let val = e.target.value.replace(/[^\d]/g, '');
-            e.target.value = val ? 'Rp ' + parseInt(val).toLocaleString('id-ID') : '';
-            updateLogicPembayaran();
+                    <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl">
+                        <button onclick="updateQty(${index}, -1)" class="w-7 h-7 bg-white rounded-lg shadow-sm text-red-500 font-black hover:bg-red-500 hover:text-white transition-all text-sm">-</button>
+                        <span class="text-xs font-black min-w-[25px] text-center text-gray-700">${item.qty}</span>
+                        <button onclick="updateQty(${index}, 1)" class="w-7 h-7 bg-white rounded-lg shadow-sm text-[#10b981] font-black hover:bg-[#10b981] hover:text-white transition-all text-sm">+</button>
+                    </div>
+                </div>`;
         });
 
-        function updateLogicPembayaran() {
-            const raw = dibayarInput.value.replace(/[^\d]/g, '');
-            const dibayarVal = parseFloat(raw || 0);
-            const kembalian = dibayarVal - totalNetto;
-            const btn = document.getElementById('btn-buat-pesanan');
+        window.currentGrandTotal = subtotal - totalPotongan;
+        document.getElementById('label-subtotal').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
+        document.getElementById('label-diskon').innerText = '- Rp ' + Math.round(totalPotongan).toLocaleString('id-ID');
+        document.getElementById('label-total').innerText = 'Rp ' + Math.round(window.currentGrandTotal).toLocaleString('id-ID');
 
-            document.getElementById('kembalian').innerText = 'Rp ' + (kembalian > 0 ? kembalian.toLocaleString('id-ID') :
-                '0');
-            document.getElementById('dibayar-hidden').value = dibayarVal;
+        document.getElementById('input-data').value = JSON.stringify(window.cart);
+        updatePaymentStatus();
+    }
 
-            if (cart.length > 0 && dibayarVal >= totalNetto) {
-                btn.disabled = false;
-                btn.className =
-                    "w-full bg-[#7a3939] text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all hover:bg-[#5a2a2a] transform active:scale-95";
-            } else {
-                btn.disabled = true;
-                btn.className =
-                    "w-full bg-gray-200 text-white py-4 rounded-2xl font-black uppercase tracking-widest transition-all";
-            }
-        }
-
-        // Search Menu
-        document.getElementById('search').addEventListener('input', function() {
-            const kw = this.value.toLowerCase();
-            document.querySelectorAll('.product-card').forEach(c => {
-                c.style.display = c.dataset.nama.toLowerCase().includes(kw) ? 'block' : 'none';
-            });
-        });
-
+    window.updateQty = function(index, change) {
+        const item = window.cart[index];
+        if (change > 0 && item.qty >= item.stokMax) return alert('Stok Maksimal!');
+        item.qty += change;
+        if (item.qty < 1) window.cart.splice(index, 1);
         renderCart();
-    </script>
+    }
+
+    // 5. LOGIKA PEMBAYARAN & KEMBALIAN
+    function updatePaymentStatus() {
+        const raw = document.getElementById('dibayar').value.replace(/\D/g, '');
+        const pay = parseInt(raw || 0);
+        const btn = document.getElementById('btn-bayar');
+        const kembalian = pay - window.currentGrandTotal;
+
+        document.getElementById('dibayar-hidden').value = pay;
+        document.getElementById('label-kembalian').innerText = 'Rp ' + (kembalian > 0 ? kembalian.toLocaleString('id-ID') : '0');
+
+        if (window.cart.length > 0 && pay >= window.currentGrandTotal) {
+            btn.disabled = false;
+            btn.className = "w-full bg-[#7a3939] text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl hover:bg-[#5a2a2a] transition-all transform active:scale-95";
+        } else {
+            btn.disabled = true;
+            btn.className = "w-full bg-gray-200 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em]";
+        }
+    }
+
+    // 6. EVENT LISTENERS
+    document.getElementById('dibayar').addEventListener('input', function(e) {
+        let val = e.target.value.replace(/\D/g, '');
+        e.target.value = val ? 'Rp ' + parseInt(val).toLocaleString('id-ID') : '';
+        updatePaymentStatus();
+    });
+
+    document.getElementById('search').addEventListener('input', function() {
+        const kw = this.value.toLowerCase();
+        document.querySelectorAll('.product-card').forEach(c => {
+            const text = c.innerText.toLowerCase();
+            c.style.display = text.includes(kw) ? 'block' : 'none';
+        });
+    });
+
+    window.clearCart = function() {
+        if(confirm('Kosongkan semua pesanan?')) {
+            window.cart = [];
+            renderCart();
+        }
+    }
+
+    // Inisialisasi awal
+    renderCart();
+</script>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #f3f4f6; border-radius: 20px; }
+</style>
 @endsection

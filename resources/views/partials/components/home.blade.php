@@ -104,15 +104,13 @@
         </div>
     </section>
 
-    <!-- ============================================================ -->
-    <!-- SECTION 3: MENU HIGHLIGHT (Estetik & Menggugah Selera) -->
+    <!-- SECTION 3: MENU HIGHLIGHT (Update Logika Varian & Promo) -->
     <!-- ============================================================ -->
     <section class="py-24 bg-[#FAFAFA] relative">
         <div class="max-w-7xl mx-auto px-4 relative z-10">
             <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                 <div>
-                    <h2 class="font-serif text-4xl font-bold text-coffee-primary uppercase tracking-tight">Our Signature
-                    </h2>
+                    <h2 class="font-serif text-4xl font-bold text-coffee-primary uppercase tracking-tight">Our Signature</h2>
                     <div class="h-1.5 w-20 bg-coffee-secondary mt-3 rounded-full"></div>
                 </div>
                 <a href="{{ route('menu') }}"
@@ -124,71 +122,78 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 @foreach ($signatureMenus as $menu)
                     @php
-                        $promo = $menu->activePromo; // Menggunakan relasi hasOne yang kita buat sebelumnya
-                        $hargaAsli = $menu->harga;
+                        // 1. Cari varian dengan harga termurah sebagai display depan
+                        $cheapestVariant = $menu->variants->sortBy('harga')->first();
+
+                        $hargaAsli = $cheapestVariant->harga ?? 0;
                         $hargaAkhir = $hargaAsli;
+
+                        // 2. Cek apakah varian termurah ini punya promo aktif
+                        $promo = $cheapestVariant ? $cheapestVariant->promos->first() : null;
 
                         if ($promo) {
                             if ($promo->jenis_promo == 'persen') {
-                                $hargaAkhir = $hargaAsli - $hargaAsli * ($promo->nilai_diskon / 100);
+                                $hargaAkhir = $hargaAsli - ($hargaAsli * ($promo->nilai_diskon / 100));
                             } else {
                                 $hargaAkhir = $hargaAsli - $promo->nilai_diskon;
                             }
                         }
                     @endphp
 
-                    <div
-                        class="bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-all duration-500 group border border-gray-100">
+                    <div class="bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-all duration-500 group border border-gray-100">
                         <!-- Image Wrapper -->
                         <div class="h-56 rounded-[1.5rem] overflow-hidden relative mb-5">
                             <img src="{{ asset('storage/' . $menu->gambar) }}" alt="{{ $menu->nama_menu }}"
                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
 
-                            <!-- Badge Logika -->
+                            <!-- Badge Status -->
                             @if ($promo)
-                                <div
-                                    class="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse">
-                                    SPECIAL PROMO
+                                <div class="absolute top-3 left-3 bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse uppercase tracking-widest">
+                                    Promo {{ $promo->jenis_promo == 'persen' ? $promo->nilai_diskon.'%' : 'Spesial' }}
                                 </div>
                             @else
-                                <div
-                                    class="absolute top-3 left-3 bg-coffee-primary/80 backdrop-blur-sm text-coffee-secondary text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg">
-                                    BEST SELLER
+                                <div class="absolute top-3 left-3 bg-coffee-primary/80 backdrop-blur-sm text-coffee-secondary text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-widest">
+                                    Signature
                                 </div>
                             @endif
                         </div>
 
                         <!-- Info -->
                         <div class="px-2">
-                            <span
-                                class="text-[10px] font-bold text-coffee-secondary uppercase tracking-[0.2em]">{{ $menu->kategori }}</span>
-                            <h3 class="font-serif text-xl font-bold text-coffee-primary mb-2 mt-1">{{ $menu->nama_menu }}
-                            </h3>
+                            <span class="text-[10px] font-bold text-coffee-secondary uppercase tracking-[0.2em]">
+                                {{ $menu->category->nama_kategori ?? 'Coffee' }}
+                            </span>
+                            <h3 class="font-serif text-xl font-bold text-coffee-primary mb-2 mt-1 truncate">{{ $menu->nama_menu }}</h3>
                             <p class="text-gray-400 text-xs mb-5 line-clamp-2 leading-relaxed italic">
-                                "{{ $menu->deskripsi }}"</p>
+                                "{{ $menu->deskripsi ?? 'Cita rasa kopi autentik dari Access Coffee Station.' }}"
+                            </p>
 
                             <div class="flex justify-between items-center pt-4 border-t border-gray-50">
                                 <div>
+                                    <p class="text-[9px] text-gray-400 uppercase font-bold">Mulai Dari</p>
                                     @if ($promo)
-                                        <span class="block text-[10px] text-gray-400 line-through tracking-wider">Rp
-                                            {{ number_format($hargaAsli, 0, ',', '.') }}</span>
-                                        <span class="text-lg font-bold text-coffee-dark font-serif">Rp
-                                            {{ number_format($hargaAkhir, 0, ',', '.') }}</span>
+                                        <span class="block text-[10px] text-gray-400 line-through tracking-wider">
+                                            Rp {{ number_format($hargaAsli, 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-lg font-bold text-[#7a3939] font-serif">
+                                            Rp {{ number_format($hargaAkhir, 0, ',', '.') }}
+                                        </span>
                                     @else
-                                        <span class="text-lg font-bold text-coffee-dark font-serif">Rp
-                                            {{ number_format($hargaAsli, 0, ',', '.') }}</span>
+                                        <span class="text-lg font-bold text-[#7a3939] font-serif">
+                                            Rp {{ number_format($hargaAsli, 0, ',', '.') }}
+                                        </span>
                                     @endif
                                 </div>
 
-                                <!-- Tombol Tambah Minimalis -->
-                                <button
-                                    class="w-10 h-10 rounded-xl bg-coffee-primary text-coffee-secondary flex items-center justify-center hover:bg-coffee-secondary hover:text-coffee-primary transition-all duration-300 shadow-lg shadow-coffee-primary/20">
+                                <!-- Tombol Detail/Pesan -->
+                                <a href="{{ route('menu.show', $menu->slug) }}"
+                                    class="w-10 h-10 rounded-xl bg-coffee-primary text-coffee-secondary flex items-center justify-center hover:bg-coffee-secondary hover:text-coffee-primary transition-all duration-300 shadow-lg">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                     </svg>
-                                </button>
+                                </a>
                             </div>
                         </div>
                     </div>

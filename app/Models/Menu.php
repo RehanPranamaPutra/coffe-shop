@@ -11,16 +11,7 @@ class Menu extends Model
     use HasFactory;
 
     // Tambahkan ini
-    protected $fillable = [
-        'nama_menu',
-        'slug',
-        'harga',
-        'stok',
-        'kategori',
-        'status',
-        'deskripsi',
-        'gambar',
-    ];
+    protected $fillable = ['categories_id', 'nama_menu','slug', 'deskripsi', 'gambar', 'status'];
 
     // Optional: Casting untuk tipe data
     protected $casts = [
@@ -31,7 +22,7 @@ class Menu extends Model
     public function promos()
     {
         // Hubungkan ke model Promo, bukan Menu
-    return $this->hasMany(Promo::class, 'menu_id'); 
+        return $this->hasMany(Promo::class, 'menu_id');
     }
     public function transaksiPembelian()
     {
@@ -52,4 +43,18 @@ class Menu extends Model
     {
         return $this->hasMany(TransaksiItem::class);
     }
+
+    public function variants()
+    {
+        return $this->hasMany(MenuVariant::class);
+    }
+    // app/Models/Menu.php
+
+    public function category() // Nama relasi
+    {
+        // Parameter kedua adalah nama kolom foreign key Anda: 'categories_id'
+        return $this->belongsTo(Categories::class, 'categories_id');
+    }
+
+
 }

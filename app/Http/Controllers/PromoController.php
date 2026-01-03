@@ -3,50 +3,43 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use App\Models\Menu;
 use App\Models\Promo;
+use App\Models\MenuVariant; // Import Model Varian
 use Illuminate\Http\Request;
 
 class PromoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        // pakai paginate agar tidak berat di view
-        $promos = Promo::with('menu')->orderBy('created_at', 'desc')->paginate(10);
+        // Eager load ke variant dan menu agar bisa menampilkan nama menu di tabel promo
+        $promos = Promo::with('variant.menu')->orderBy('created_at', 'desc')->paginate(10);
 
         return view('dashboard.promo.index', compact('promos'));
     }
 
     public function create()
     {
-        $menus = Menu::all(['id', 'nama_menu']);
-        return view('dashboard.promo.create', compact('menus'));
+        // Ambil semua varian beserta data menu induknya untuk dropdown
+        $variants = MenuVariant::with('menu')->get();
+        return view('dashboard.promo.create', compact('variants'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'menu_id' => 'required|exists:menus,id',
+            // Ubah dari menu_id ke menu_variant_id
+            'menu_variant_id' => 'required|exists:menu_variants,id',
             'jenis_promo' => 'required|in:persen,nominal',
             'nilai_diskon' => 'required|numeric|min:0',
-            'tanggal_mulai' => 'required|date|after_or_equal:today',
+            'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'status' => 'nullable|in:aktif,nonaktif', // boleh kosong => default aktif
+            'status' => 'nullable|in:aktif,nonaktif',
         ]);
 
-        // Pastikan format datetime dari HTML (datetime-local) di-convert ke format DB jika perlu
-        // Jika input datang seperti "2025-10-27T21:00" gunakan Carbon
-        if ($request->has('tanggal_mulai')) {
-            $validated['tanggal_mulai'] = Carbon::createFromFormat('Y-m-d\TH:i', $request->input('tanggal_mulai'))->toDateTimeString();
-        }
-        if ($request->has('tanggal_selesai')) {
-            $validated['tanggal_selesai'] = Carbon::createFromFormat('Y-m-d\TH:i', $request->input('tanggal_selesai'))->toDateTimeString();
-        }
+        // Konversi format datetime-local ke format Database
+        $validated['tanggal_mulai'] = Carbon::parse($request->tanggal_mulai)->toDateTimeString();
+        $validated['tanggal_selesai'] = Carbon::parse($request->tanggal_selesai)->toDateTimeString();
 
-        // default status jika tidak dikirim
         $validated['status'] = $validated['status'] ?? 'aktif';
 
         Promo::create($validated);
@@ -54,23 +47,22 @@ class PromoController extends Controller
         return redirect()->route('promo.index')->with('success', 'Promo berhasil ditambahkan!');
     }
 
-    public function show(Promo $promo)
-    {
-        $promo->load('menu');
-        return view('dashboard.promo.show', compact('promo'));
-    }
-
     public function edit(Promo $promo)
     {
-        $menus = Menu::all(['id', 'nama_menu']);
-        $promo->load('menu');
-        return view('dashboard.promo.edit', compact('promo', 'menus'));
+        // Load varian untuk dropdown pilihan
+        $variants = MenuVariant::with('menu')->get();
+
+        // Konversi tanggal agar bisa dibaca oleh input datetime-local HTML
+        $promo->tanggal_mulai = Carbon::parse($promo->tanggal_mulai)->format('Y-m-d\TH:i');
+        $promo->tanggal_selesai = Carbon::parse($promo->tanggal_selesai)->format('Y-m-d\TH:i');
+
+        return view('dashboard.promo.edit', compact('promo', 'variants'));
     }
 
     public function update(Request $request, Promo $promo)
     {
         $validated = $request->validate([
-            'menu_id' => 'required|exists:menus,id',
+            'menu_variant_id' => 'required|exists:menu_variants,id',
             'jenis_promo' => 'required|in:persen,nominal',
             'nilai_diskon' => 'required|numeric|min:0',
             'tanggal_mulai' => 'required|date',
@@ -78,19 +70,14 @@ class PromoController extends Controller
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        // Convert datetime-local if dikirim dalam format Y-m-d\TH:i
-        if ($request->has('tanggal_mulai')) {
-            $validated['tanggal_mulai'] = Carbon::createFromFormat('Y-m-d\TH:i', $request->input('tanggal_mulai'))->toDateTimeString();
-        }
-        if ($request->has('tanggal_selesai')) {
-            $validated['tanggal_selesai'] = Carbon::createFromFormat('Y-m-d\TH:i', $request->input('tanggal_selesai'))->toDateTimeString();
-        }
+        // Konversi ulang format tanggal untuk database
+        $validated['tanggal_mulai'] = Carbon::parse($request->tanggal_mulai)->toDateTimeString();
+        $validated['tanggal_selesai'] = Carbon::parse($request->tanggal_selesai)->toDateTimeString();
 
         $promo->update($validated);
 
         return redirect()->route('promo.index')->with('success', 'Promo berhasil diperbarui!');
     }
-
     public function destroy(Promo $promo)
     {
         $promo->delete();
