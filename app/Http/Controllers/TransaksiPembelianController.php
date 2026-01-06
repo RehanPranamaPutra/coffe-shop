@@ -10,7 +10,7 @@ class TransaksiPembelianController extends Controller
 {
     public function index()
     {
-        $transaksiPembelian = TransaksiPembelian::all();
+        $transaksiPembelian = TransaksiPembelian::all(); 
         return view('dashboard.transaksipembelian.index', compact('transaksiPembelian'));
     }
 

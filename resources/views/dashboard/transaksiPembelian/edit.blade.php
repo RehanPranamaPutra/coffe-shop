@@ -13,7 +13,7 @@
             <input type="text" name="nama_barang" class="w-full border rounded p-2"
                 placeholder="Masukkan nama barang"
                 value="{{ old('nama_barang', $transaksiPembelian->nama_barang) }}" required>
-        </div>
+        </div> 
 
         <div class="mb-4">
             <label class="block font-semibold mb-1">Kategori</label>
