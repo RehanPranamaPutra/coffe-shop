@@ -35,7 +35,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Stok Awal</label>
-                        <input type="number" name="stok" value="100" required class="w-full border-gray-300 rounded-xl focus:ring-[#cc9966]">
+                        <input type="number" name="stok" placeholder="20"  required class="w-full border-gray-300 rounded-xl focus:ring-[#cc9966]">
                     </div>
                     <button type="submit" class="w-full bg-[#cc9966] text-white py-3 rounded-xl font-bold hover:bg-[#b38659] transition shadow-lg">
                         Simpan Variasi

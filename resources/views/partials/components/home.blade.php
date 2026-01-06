@@ -110,7 +110,8 @@
         <div class="max-w-7xl mx-auto px-4 relative z-10">
             <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                 <div>
-                    <h2 class="font-serif text-4xl font-bold text-coffee-primary uppercase tracking-tight">Our Signature</h2>
+                    <h2 class="font-serif text-4xl font-bold text-coffee-primary uppercase tracking-tight">Our Signature
+                    </h2>
                     <div class="h-1.5 w-20 bg-coffee-secondary mt-3 rounded-full"></div>
                 </div>
                 <a href="{{ route('menu') }}"
@@ -122,60 +123,58 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 @foreach ($signatureMenus as $menu)
                     @php
-                        // 1. Cari varian dengan harga termurah sebagai display depan
-                        $cheapestVariant = $menu->variants->sortBy('harga')->first();
+                        // Logika penentuan harga (Sama seperti sebelumnya)
+                        $promoVariant = $menu->variants->first(fn($v) => $v->promos->isNotEmpty());
+                        $displayVariant = $promoVariant ?? $menu->variants->sortBy('harga')->first();
 
-                        $hargaAsli = $cheapestVariant->harga ?? 0;
+                        $hargaAsli = $displayVariant->harga ?? 0;
+                        $promo = $displayVariant ? $displayVariant->promos->first() : null;
                         $hargaAkhir = $hargaAsli;
 
-                        // 2. Cek apakah varian termurah ini punya promo aktif
-                        $promo = $cheapestVariant ? $cheapestVariant->promos->first() : null;
-
                         if ($promo) {
-                            if ($promo->jenis_promo == 'persen') {
-                                $hargaAkhir = $hargaAsli - ($hargaAsli * ($promo->nilai_diskon / 100));
-                            } else {
-                                $hargaAkhir = $hargaAsli - $promo->nilai_diskon;
-                            }
+                            $hargaAkhir =
+                                $promo->jenis_promo == 'persen'
+                                    ? $hargaAsli - $hargaAsli * ($promo->nilai_diskon / 100)
+                                    : $hargaAsli - $promo->nilai_diskon;
                         }
                     @endphp
 
-                    <div class="bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-all duration-500 group border border-gray-100">
-                        <!-- Image Wrapper -->
+                    <div
+                        class="bg-white rounded-[2rem] p-4 shadow-sm hover:shadow-xl transition-all duration-500 group border border-gray-100">
                         <div class="h-56 rounded-[1.5rem] overflow-hidden relative mb-5">
                             <img src="{{ asset('storage/' . $menu->gambar) }}" alt="{{ $menu->nama_menu }}"
                                 class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
 
-                            <!-- Badge Status -->
-                            @if ($promo)
-                                <div class="absolute top-3 left-3 bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse uppercase tracking-widest">
-                                    Promo {{ $promo->jenis_promo == 'persen' ? $promo->nilai_diskon.'%' : 'Spesial' }}
+                            <!-- BADGE DINAMIS BERDASARKAN TAG -->
+                            @if ($menu->tag == 'PROMO')
+                                <div
+                                    class="absolute top-3 left-3 bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse uppercase tracking-widest">
+                                    🔥 DISKON SPESIAL
                                 </div>
-                            @else
-                                <div class="absolute top-3 left-3 bg-coffee-primary/80 backdrop-blur-sm text-coffee-secondary text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-widest">
-                                    Signature
+                            @elseif($menu->tag == 'BEST SELLER')
+                                <div
+                                    class="absolute top-3 left-3 bg-orange-500 text-white text-[9px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-widest">
+                                    ⭐ PALING LARIS
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Info -->
+                        <!-- Info Menu -->
                         <div class="px-2">
                             <span class="text-[10px] font-bold text-coffee-secondary uppercase tracking-[0.2em]">
                                 {{ $menu->category->nama_kategori ?? 'Coffee' }}
                             </span>
-                            <h3 class="font-serif text-xl font-bold text-coffee-primary mb-2 mt-1 truncate">{{ $menu->nama_menu }}</h3>
-                            <p class="text-gray-400 text-xs mb-5 line-clamp-2 leading-relaxed italic">
-                                "{{ $menu->deskripsi ?? 'Cita rasa kopi autentik dari Access Coffee Station.' }}"
-                            </p>
+                            <h3 class="font-serif text-xl font-bold text-coffee-primary mb-2 mt-1 truncate">
+                                {{ $menu->nama_menu }}</h3>
 
                             <div class="flex justify-between items-center pt-4 border-t border-gray-50">
                                 <div>
-                                    <p class="text-[9px] text-gray-400 uppercase font-bold">Mulai Dari</p>
+                                    <p class="text-[9px] text-gray-400 uppercase font-bold">Harga</p>
                                     @if ($promo)
-                                        <span class="block text-[10px] text-gray-400 line-through tracking-wider">
+                                        <span class="block text-[10px] text-gray-400 line-through">
                                             Rp {{ number_format($hargaAsli, 0, ',', '.') }}
                                         </span>
-                                        <span class="text-lg font-bold text-[#7a3939] font-serif">
+                                        <span class="text-lg font-bold text-red-600 font-serif">
                                             Rp {{ number_format($hargaAkhir, 0, ',', '.') }}
                                         </span>
                                     @else
@@ -185,14 +184,11 @@
                                     @endif
                                 </div>
 
-                                <!-- Tombol Detail/Pesan -->
                                 <a href="{{ route('menu.show', $menu->slug) }}"
                                     class="w-10 h-10 rounded-xl bg-coffee-primary text-coffee-secondary flex items-center justify-center hover:bg-coffee-secondary hover:text-coffee-primary transition-all duration-300 shadow-lg">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
+                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>
                                 </a>
                             </div>
                         </div>

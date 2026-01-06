@@ -36,7 +36,7 @@ class ProdukController extends Controller
         $request->validate([
             'nama_menu' => 'required|max:255',
             'categories_id' => 'required|exists:categories,id',
-            'gambar' => 'required|image|mimes:jpg,jpeg,png.webp|max:2048',
+            'gambar' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         try {

@@ -1,29 +1,35 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app') {{-- Pastikan nama file layout utama Anda adalah app.blade.php di folder layouts --}}
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+@section('title', 'Edit Profil - Access Coffee')
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
+@section('content')
+<div class="max-w-7xl mx-auto space-y-6">
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
+    <!-- Bagian Atas: Header Halaman -->
+    <div class="mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Pengaturan Profil</h2>
+        <p class="text-gray-600">Update informasi akun dan kata sandi Anda.</p>
+    </div>
+
+    <!-- Update Profile Information -->
+    <div class="p-4 sm:p-8 bg-white shadow-sm border border-gray-100 sm:rounded-2xl">
+        <div class="max-w-xl">
+            @include('profile.partials.update-profile-information-form')
         </div>
     </div>
-</x-app-layout>
+
+    <!-- Update Password -->
+    <div class="p-4 sm:p-8 bg-white shadow-sm border border-gray-100 sm:rounded-2xl">
+        <div class="max-w-xl">
+            @include('profile.partials.update-password-form')
+        </div>
+    </div>
+
+    <!-- Delete User -->
+    <div class="p-4 sm:p-8 bg-white shadow-sm border border-gray-100 sm:rounded-2xl">
+        <div class="max-w-xl">
+            @include('profile.partials.delete-user-form')
+        </div>
+    </div>
+</div>
+@endsection

@@ -24,7 +24,6 @@ Route::controller(PublicController::class)->group(function () {
 });
 
 Route::get('/menu/{slug}',[PublicController::class,'menuShow'])->name('menu.show');
-
 // Protected Routes (memerlukan authentication)
 Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
